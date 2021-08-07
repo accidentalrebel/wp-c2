@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import subprocess
+import urllib.parse
 
 def submit_comment(comment_str):
     curl_command = """
@@ -47,9 +48,11 @@ def fetch_comments_page(comments_url):
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
 
-url = submit_comment("TestComment14")
-comments_page = fetch_comments_page(url)
-print("\n###\n\n")
-print(comments_page)
+url = submit_comment("TestComment16")
+url_parsed = urllib.parse.urlparse(url)
+print(url_parsed)
+print(urllib.parse.parse_qs(url_parsed.query))
 
-
+# comments_page = fetch_comments_page(url)
+# print("\n###\n\n")
+# print(comments_page)
