@@ -22,7 +22,7 @@ def submit_comment(comment_str):
       -H 'Referer: http://127.0.0.3/2021/08/06/hello-world/' \
       -H 'Accept-Language: en-US,en;q=0.9' \
       --data-raw 'author=TestName&email=test%40email.com&url=&submit=Post+Comment&comment_post_ID=1&comment_parent=0&comment="""
-    curl_command += comment_str + "' --compressed -Ls -o /dev/null -w %{url_effective}"
+    curl_command += comment_str + "' --compressed -Ls -o /dev/null -w \"%{http_code},%{url_effective}\""
     curl_output = subprocess.check_output(curl_command, shell=True)
     return curl_output.decode()
 
@@ -48,11 +48,18 @@ def fetch_comments_page(comments_url):
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
 
-url = submit_comment("TestComment16")
+response = submit_comment("TestComment17")
+response_splitted = response.split(",")
+http_code = response_splitted[0]
+url = response_splitted[1]
+
+print("## httpcode: " + http_code)
+print("## url: " + url);
+
 url_parsed = urllib.parse.urlparse(url)
-print(url_parsed)
-print(urllib.parse.parse_qs(url_parsed.query))
+print("## " + str(url_parsed))
+print("## " + str(urllib.parse.parse_qs(url_parsed.query)))
 
 # comments_page = fetch_comments_page(url)
-# print("\n###\n\n")
+# print("\n>>>\n\n")
 # print(comments_page)
