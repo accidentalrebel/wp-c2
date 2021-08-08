@@ -32,7 +32,7 @@ def submit_comment(comment_str):
       -H 'Referer: http://127.0.0.3/2021/08/06/hello-world/' \
       -H 'Accept-Language: en-US,en;q=0.9' \
       --data-raw 'author=TestName&email=test%40email.com&url=&submit=Post+Comment&comment_post_ID=1&comment_parent=0&comment="""
-    curl_command += comment_str + "' --compressed -Ls -o /dev/null -w \"%{http_code},%{url_effective}\""
+    curl_command += comment_str + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
     curl_output = subprocess.check_output(curl_command, shell=True)
     return curl_output.decode()
 
@@ -58,21 +58,26 @@ def fetch_comments_page(comments_url):
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
 
-response = submit_comment("TestComment18")
-response_splitted = response.split(",")
+response = submit_comment("TestComment103")
+response_splitted = response.split("\n")
+response_html = "\n".join(response_splitted[:-1])
+response_details = response_splitted[-1]
+
+response_splitted = response_details.split(",")
 http_code = response_splitted[0]
 url = response_splitted[1]
 
+print("## response html: " + response_html)
 print("## httpcode: " + http_code)
 print("## url: " + url);
 
-url_parsed = urllib.parse.urlparse(url)
-print("## " + str(url_parsed))
-print("## " + str(urllib.parse.parse_qs(url_parsed.query)))
+# url_parsed = urllib.parse.urlparse(url)
+# print("## " + str(url_parsed))
+# print("## " + str(urllib.parse.parse_qs(url_parsed.query)))
 
-comments_page = fetch_comments_page(url)
-print("\n>>>\n\n")
-print(comments_page + "\n\n")
+# comments_page = fetch_comments_page(url)
+# print("\n>>>\n\n")
+# print(comments_page + "\n\n")
 
-computed_hash = compute_moderation_hash("2021-08-08 06:11:05")
-print("Computed hash: " + computed_hash)
+# computed_hash = compute_moderation_hash("2021-08-08 06:11:05")
+# print("Computed hash: " + computed_hash)
