@@ -12,18 +12,18 @@ sync_channel = "2021/08/06/hello-world/"
 
 time_slot = "1:11"
 time_slot_seconds = int(time_slot.split(":")[1])
-current_time = datetime.datetime.now().time()
 
-time_diff = 0
-if current_time.second < time_slot_seconds:
-    time_diff = time_slot_seconds - current_time.second
+current_date = datetime.datetime.now()
+
+if current_date.time().second >= time_slot_seconds:
+    target_date = current_date.replace(minute=current_date.time().minute + 1,second=time_slot_seconds, microsecond=0)
 else:
-    time_diff = 60 - current_time.second + time_slot_seconds
-    
-print(str(current_time.second) + " ?- " + str(time_slot_seconds))
-print(str(time_diff))
+    target_date = current_date.replace(second=time_slot_seconds, microsecond=0)
 
-time.sleep(time_diff)
+current_date = datetime.datetime.now()
+    
+time_diff = target_date - current_date
+time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))
 
 print("Triggering at: " + str(datetime.datetime.now().time()))
 
