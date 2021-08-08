@@ -7,13 +7,11 @@ import sys
 
 AUTH_KEY = "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1"
 AUTH_SALT = "ea30c9849bfd208c9890cbf7bb56f59a20b52c4f"
-test_date = "2021-08-08 06:11:05"
 
-salt = AUTH_KEY + AUTH_SALT
-computed_hashed = hmac.new(salt.encode(), test_date.encode(), 'md5').hexdigest()
-print(computed_hashed + " =? a8026211977358a7886c9bd6ee8c3209")
-assert(computed_hashed == 'a8026211977358a7886c9bd6ee8c3209')
-sys.exit()
+def compute_moderation_hash(date_str):
+    salt = AUTH_KEY + AUTH_SALT
+    computed_hash = hmac.new(salt.encode(), date_str.encode(), 'md5').hexdigest()
+    return computed_hash
 
 def submit_comment(comment_str):
     curl_command = """
@@ -74,4 +72,7 @@ print("## " + str(urllib.parse.parse_qs(url_parsed.query)))
 
 comments_page = fetch_comments_page(url)
 print("\n>>>\n\n")
-print(comments_page)
+print(comments_page + "\n\n")
+
+computed_hash = compute_moderation_hash("2021-08-08 06:11:05")
+print("Computed hash: " + computed_hash)
