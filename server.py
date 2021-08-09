@@ -92,28 +92,20 @@ def get_previous_valid_timeslot_date(current_datetime, time_slot):
     
     target_hour = target_date.time().hour
     target_minute = target_date.time().minute
-    print("##A " + str(target_minute))
     target_minute -= 10;
-    print("##B " + str(target_minute))
+
     if target_minute < 0:
         target_minute = 60 + target_minute
         target_hour -= 1
 
-    print("##C " + str(target_minute))
-
-    if target_date.time().minute - (target_date.time().minute % 10) > time_slot_minutes:
+    if (target_minute % 10) > time_slot_minutes:
         target_minute += 10
         if target_minute > 60:
             target_minute = target_minute - 60
             target_hour += 1
 
-    print("##D " + str(target_minute))            
     target_minute = target_minute - (target_minute % 10) + time_slot_minutes
-
-    print("##E " + str(target_minute))
-
     target_date = target_date.replace(hour=target_hour, minute=target_minute, second=time_slot_seconds)
-    print("## " + str(target_date))
 
     return target_date
 
