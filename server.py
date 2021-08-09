@@ -42,7 +42,7 @@ def fetch_comments_page(comments_url):
       -H 'Sec-Fetch-User: ?1' \
       -H 'Sec-Fetch-Dest: document' \
       -H 'Accept-Language: en-US,en;q=0.9' \
-      --compressed
+      --compressed -s
     """
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
@@ -64,25 +64,12 @@ def get_current_unapproved_index():
     response = submit_comment(comment_to_send)
     comment_index += 1
 
-    print(str(response))
-    
     response_splitted = response.split("\n")
     response_details = response_splitted[-1]
 
     response_splitted = response_details.split(",")
     url = response_splitted[1]
     return get_unapproved_index_from_url(url)
-
-if prev_unapproved_index == 0:
-    prev_unapproved_index = get_current_unapproved_index()
-    print("## " + str(prev_unapproved_index))
-
-delay_to_timeslot(time_slot)
-unapproved_index = get_current_unapproved_index()
-print("## " + str(unapproved_index))
-
-client = Client()
-client.time_slot = "1:11"
 
 def get_previous_valid_timeslot_date(current_datetime, time_slot):
     # Searches for the valid timeslot location within the previous 10 minutes
@@ -113,6 +100,17 @@ def get_previous_valid_timeslot_date(current_datetime, time_slot):
 
     return target_date
 
+if prev_unapproved_index == 0:
+    prev_unapproved_index = get_current_unapproved_index()
+    print("## " + str(prev_unapproved_index))
+
+# delay_to_timeslot(time_slot)
+unapproved_index = get_current_unapproved_index()
+print("## " + str(unapproved_index))
+
+client = Client()
+client.time_slot = "1:11"
+
 timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
 timeslot_date = str(timeslot_date).split(".")[0]
 print(timeslot_date)
@@ -120,13 +118,28 @@ print(timeslot_date)
 computed_hash = compute_moderation_hash(timeslot_date)
 print("[INFO] Computed hash: " + computed_hash)
 
-url = target_blog + sync_channel + "?unapproved=" + str(unapproved_index - 1) + "&moderation-hash=" + computed_hash
+url = target_blog + sync_channel + "?unapproved=" + str(unapproved_index - 1) + "&moderation-hash=" + computed_hash + "&url=" + str(unapproved_index - 1)
 print("[INFO] Checking URL: " + url);
 
-# soup = BeautifulSoup(response_html, "html.parser")
-# print(str(soup))
+# TEST for quickly checking if parsing is correct
+# url = "http://127.0.0.3/2021/08/06/hello-world/#comment-90"
+# END_TEST
 
-# response = submit_comment("TestComment")
+response_html = fetch_comments_page(url)
+soup = BeautifulSoup(response_html, "html.parser")
+
+print(str(soup))
+
+for i in soup.find_all("time"):
+    print("## " + str(i))
+    if i.has_attr("datetime"):
+        print("### has " + i["datetime"])
+
+elem = soup.find("div", class_="comment-content")
+if elem:
+    print(str(elem.p.string))
+
+# response = submit_comment("TestComment")h
 # comment_index += 1
 
 # response_splitted = response.split("\n")
