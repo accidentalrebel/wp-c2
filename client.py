@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from wpc2 import submit_comment, delay_to_timeslot
+from wpc2 import *
 import datetime
 
 seed = "abcdef"

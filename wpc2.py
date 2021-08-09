@@ -33,7 +33,7 @@ def delay_to_timeslot(time_slot):
     time_slot_splitted = time_slot.split(":")
     time_slot_minutes = int(time_slot_splitted[0])
     time_slot_seconds = int(time_slot_splitted[1])
-    current_date = datetime.datetime.now()
+    current_date = datetime.datetime.utcnow()
 
     current_minute = current_date.time().minute
     current_hour = current_date.time().hour
@@ -45,7 +45,7 @@ def delay_to_timeslot(time_slot):
     print("## current_minute: " + str(current_minute) + ", adjusted_minute: " + str(adjusted_minute))
     target_date = current_date.replace(hour=current_hour, minute=adjusted_minute,second=time_slot_seconds, microsecond=0)
 
-    current_date = datetime.datetime.now()
+    current_date = datetime.datetime.utcnow()
 
     time_diff = target_date - current_date
     print("[INFO] Delaying for " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins")

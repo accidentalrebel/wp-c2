@@ -23,3 +23,8 @@ def test_get_previous_valid_timeslot_date():
     timeslot_date = get_previous_valid_timeslot_date(current_date, time_slot)
     assert(timeslot_date.minute == 51)
     assert(timeslot_date.second == 11)
+
+def test_compute_moderation_hash():
+    posted_date = "2021-08-09 06:11:11"
+    computed_hash = compute_moderation_hash(posted_date)
+    assert("0d36c71955cc6fc19fb31501132cfdb1" == computed_hash)

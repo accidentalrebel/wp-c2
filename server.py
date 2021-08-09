@@ -18,6 +18,8 @@ class Client:
 
 def compute_moderation_hash(date_str):
     salt = AUTH_KEY + AUTH_SALT
+    
+    assert(salt == "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1ea30c9849bfd208c9890cbf7bb56f59a20b52c4f")
     computed_hash = hmac.new(salt.encode(), date_str.encode(), 'md5').hexdigest()
     return computed_hash
 
@@ -109,7 +111,12 @@ def get_previous_valid_timeslot_date(current_datetime, time_slot):
 
     return target_date
 
-get_previous_valid_timeslot_date(datetime.datetime.now(), client.time_slot)
+timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
+timeslot_date = str(timeslot_date).split(".")[0]
+print(timeslot_date)
+
+computed_hash = compute_moderation_hash(timeslot_date)
+print("Computed hash: " + computed_hash)
 
 # soup = BeautifulSoup(response_html, "html.parser")
 # print(str(soup))
