@@ -104,7 +104,7 @@ if prev_unapproved_index == 0:
     prev_unapproved_index = get_current_unapproved_index()
     print("## " + str(prev_unapproved_index))
 
-# delay_to_timeslot(time_slot)
+delay_to_timeslot(time_slot)
 unapproved_index = get_current_unapproved_index()
 print("## " + str(unapproved_index))
 
@@ -127,13 +127,6 @@ print("[INFO] Checking URL: " + url);
 
 response_html = fetch_comments_page(url)
 soup = BeautifulSoup(response_html, "html.parser")
-
-print(str(soup))
-
-for i in soup.find_all("time"):
-    print("## " + str(i))
-    if i.has_attr("datetime"):
-        print("### has " + i["datetime"])
 
 elem = soup.find("div", class_="comment-content")
 if elem:
