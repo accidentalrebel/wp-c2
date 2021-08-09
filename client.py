@@ -15,5 +15,6 @@ delay_to_timeslot(time_slot)
 
 print("Triggered at: " + str(datetime.datetime.now().time()))
 
-response = submit_comment("TestComment2")
+random_string = generate_random_string(10)
+response = submit_comment(random_string + ": Exfiltrated Data Test")
 print(response)
