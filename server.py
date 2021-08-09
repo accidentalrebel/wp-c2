@@ -8,6 +8,8 @@ import sys
 
 AUTH_KEY = "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1"
 AUTH_SALT = "ea30c9849bfd208c9890cbf7bb56f59a20b52c4f"
+target_blog = "http://127.0.0.3/"
+sync_channel = "2021/08/06/hello-world/"
 
 time_slot = "2:22"
 comment_index = 0
@@ -71,13 +73,13 @@ def get_current_unapproved_index():
     url = response_splitted[1]
     return get_unapproved_index_from_url(url)
 
-# if prev_unapproved_index == 0:
-#     prev_unapproved_index = get_current_unapproved_index()
-#     print("## " + str(prev_unapproved_index))
+if prev_unapproved_index == 0:
+    prev_unapproved_index = get_current_unapproved_index()
+    print("## " + str(prev_unapproved_index))
 
-# delay_to_timeslot(time_slot)
-# unapproved_index = get_current_unapproved_index()
-# print("## " + str(unapproved_index))
+delay_to_timeslot(time_slot)
+unapproved_index = get_current_unapproved_index()
+print("## " + str(unapproved_index))
 
 client = Client()
 client.time_slot = "1:11"
@@ -116,7 +118,10 @@ timeslot_date = str(timeslot_date).split(".")[0]
 print(timeslot_date)
 
 computed_hash = compute_moderation_hash(timeslot_date)
-print("Computed hash: " + computed_hash)
+print("[INFO] Computed hash: " + computed_hash)
+
+url = target_blog + sync_channel + "?unapproved=" + str(unapproved_index - 1) + "&moderation-hash=" + computed_hash
+print("[INFO] Checking URL: " + url);
 
 # soup = BeautifulSoup(response_html, "html.parser")
 # print(str(soup))
