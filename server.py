@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-from wpc2 import submit_comment
+from wpc2 import submit_comment, generate_random_string
+from bs4 import BeautifulSoup
 import urllib.parse
 import hmac
 import sys
 
 AUTH_KEY = "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1"
 AUTH_SALT = "ea30c9849bfd208c9890cbf7bb56f59a20b52c4f"
+
+comment_index = 0
 
 def compute_moderation_hash(date_str):
     salt = AUTH_KEY + AUTH_SALT
@@ -35,18 +38,50 @@ def fetch_comments_page(comments_url):
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
 
-response = submit_comment("TestComment103")
-response_splitted = response.split("\n")
-response_html = "\n".join(response_splitted[:-1])
-response_details = response_splitted[-1]
+def get_unapproved_index_from_url(url):
+    url_parsed = urllib.parse.urlparse(url)
+    queries = urllib.parse.parse_qs(url_parsed.query)
 
-response_splitted = response_details.split(",")
-http_code = response_splitted[0]
-url = response_splitted[1]
+    if 'unapproved' in queries:
+        return int(queries['unapproved'][0])
+    else:
+        return -1
 
-print("## response html: " + response_html)
-print("## httpcode: " + http_code)
-print("## url: " + url);
+def get_current_unapproved_index():
+    global comment_index
+
+    random_string = generate_random_string(10)
+    comment_to_send = random_string + ": get_current_unapproved_index (" + str(comment_index) + ") "
+    response = submit_comment(comment_to_send)
+    comment_index += 1
+    
+    response_splitted = response.split("\n")
+    response_details = response_splitted[-1]
+
+    response_splitted = response_details.split(",")
+    url = response_splitted[1]
+    return get_unapproved_index_from_url(url)
+    
+unapproved_index = get_current_unapproved_index()
+print("## " + str(unapproved_index))
+
+# soup = BeautifulSoup(response_html, "html.parser")
+# print(str(soup))
+
+# response = submit_comment("TestComment")
+# comment_index += 1
+
+# response_splitted = response.split("\n")
+# response_html = "\n".join(response_splitted[:-1])
+# response_details = response_splitted[-1]
+
+# response_splitted = response_details.split(",")
+# http_code = response_splitted[0]
+# url = response_splitted[1]
+
+# print("## response html: " + response_html)
+# print("## httpcode: " + http_code)
+# print("## url: " + url);
 
 # url_parsed = urllib.parse.urlparse(url)
 # print("## " + str(url_parsed))

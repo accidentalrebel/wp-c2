@@ -1,6 +1,8 @@
 import subprocess
 import datetime
 import time
+import random
+import string
 
 def submit_comment(comment_str):
     curl_command = """
@@ -42,3 +44,6 @@ def delay_to_timeslot(time_slot):
     print("[INFO] Delaying for " + str(time_diff.seconds) + "." + str(time_diff.microseconds))
 
     time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))
+
+def generate_random_string(length):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
