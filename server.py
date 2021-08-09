@@ -11,7 +11,7 @@ AUTH_SALT = "ea30c9849bfd208c9890cbf7bb56f59a20b52c4f"
 target_blog = "http://127.0.0.3/"
 sync_channel = "2021/08/06/hello-world/"
 
-time_slot = "2:22"
+time_slot = "4:44"
 comment_index = 0
 prev_unapproved_index = 0
 
@@ -100,60 +100,53 @@ def get_previous_valid_timeslot_date(current_datetime, time_slot):
 
     return target_date
 
+clients = []
+for i in range(1, 4):
+    client = Client()
+    i_string = str(i)
+    client.time_slot = i_string + ":" + i_string + i_string
+    clients.append(client)
+
 if prev_unapproved_index == 0:
     prev_unapproved_index = get_current_unapproved_index()
     print("## " + str(prev_unapproved_index))
 
 delay_to_timeslot(time_slot)
 unapproved_index = get_current_unapproved_index()
+
 print("## " + str(unapproved_index))
 
-client = Client()
-client.time_slot = "1:11"
+for client in clients:
+    timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
+    print("## timeslot_date A: " + str(timeslot_date))
+    timeslot_date = str(timeslot_date).split(".")[0]
+    print("## timeslot_date B: " + str(timeslot_date))
 
-timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
-timeslot_date = str(timeslot_date).split(".")[0]
-print(timeslot_date)
+    computed_hash = compute_moderation_hash(timeslot_date)
+    print("[INFO] Computed hash: " + computed_hash)
 
-computed_hash = compute_moderation_hash(timeslot_date)
-print("[INFO] Computed hash: " + computed_hash)
+    for index_offset in range(1, len(clients) + 1):
+        print("\n\n## index_offset: " + str(index_offset))
+        current_unapproved_index = prev_unapproved_index + index_offset
+        print("## prev_unapproved_index: " + str(prev_unapproved_index) + ", current_unapproved_index: " + str(current_unapproved_index))
+        url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + computed_hash + "&url=" + str(current_unapproved_index)
+        print("[INFO] Checking URL: " + url);
 
-url = target_blog + sync_channel + "?unapproved=" + str(unapproved_index - 1) + "&moderation-hash=" + computed_hash + "&url=" + str(unapproved_index - 1)
-print("[INFO] Checking URL: " + url);
+        # TEST for quickly checking if parsing is correct
+        # url = "http://127.0.0.3/2021/08/06/hello-world/#comment-90"
+        # END_TEST
 
-# TEST for quickly checking if parsing is correct
-# url = "http://127.0.0.3/2021/08/06/hello-world/#comment-90"
-# END_TEST
+        response_html = fetch_comments_page(url)
+        # print("## response_html: " + response_html)
+        soup = BeautifulSoup(response_html, "html.parser")
 
-response_html = fetch_comments_page(url)
-soup = BeautifulSoup(response_html, "html.parser")
+        if soup.find("p", class_="comment-awaiting-moderation"):
+            elems = soup.find_all("div", class_="comment-content")
+            print("## elems: " + str(elems))
+            elem = elems[-1]
+            print("\n\n>> [INFO] Extracted data: " + str(elem.string).strip() + "\n\n")
+            break
+        else:
+            print("[INFO] No comment for moderation. Skipping...")
 
-elem = soup.find("div", class_="comment-content")
-if elem:
-    print(str(elem.p.string))
-
-# response = submit_comment("TestComment")h
-# comment_index += 1
-
-# response_splitted = response.split("\n")
-# response_html = "\n".join(response_splitted[:-1])
-# response_details = response_splitted[-1]
-
-# response_splitted = response_details.split(",")
-# http_code = response_splitted[0]
-# url = response_splitted[1]
-
-# print("## response html: " + response_html)
-# print("## httpcode: " + http_code)
-# print("## url: " + url);
-
-# url_parsed = urllib.parse.urlparse(url)
-# print("## " + str(url_parsed))
-# print("## " + str(urllib.parse.parse_qs(url_parsed.query)))
-
-# comments_page = fetch_comments_page(url)
-# print("\n>>>\n\n")
-# print(comments_page + "\n\n")
-
-# computed_hash = compute_moderation_hash("2021-08-08 06:11:05")
-# print("Computed hash: " + computed_hash)
+prev_unapproved_index = unapproved_index    
