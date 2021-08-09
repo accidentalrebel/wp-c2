@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from wpc2 import submit_comment, generate_random_string
+from wpc2 import *
 from bs4 import BeautifulSoup
 import urllib.parse
 import hmac
@@ -9,7 +9,9 @@ import sys
 AUTH_KEY = "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1"
 AUTH_SALT = "ea30c9849bfd208c9890cbf7bb56f59a20b52c4f"
 
+time_slot = "0:00"
 comment_index = 0
+prev_unapproved_index = 0
 
 def compute_moderation_hash(date_str):
     salt = AUTH_KEY + AUTH_SALT
@@ -54,6 +56,8 @@ def get_current_unapproved_index():
     comment_to_send = random_string + ": get_current_unapproved_index (" + str(comment_index) + ") "
     response = submit_comment(comment_to_send)
     comment_index += 1
+
+    print(str(response))
     
     response_splitted = response.split("\n")
     response_details = response_splitted[-1]
@@ -61,9 +65,11 @@ def get_current_unapproved_index():
     response_splitted = response_details.split(",")
     url = response_splitted[1]
     return get_unapproved_index_from_url(url)
-    
-unapproved_index = get_current_unapproved_index()
-print("## " + str(unapproved_index))
+
+if prev_unapproved_index == 0:
+    delay_to_timeslot(time_slot)
+    prev_unapproved_index = get_current_unapproved_index()
+    print("## " + str(prev_unapproved_index))
 
 # soup = BeautifulSoup(response_html, "html.parser")
 # print(str(soup))

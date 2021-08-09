@@ -29,19 +29,26 @@ def submit_comment(comment_str):
 
 def delay_to_timeslot(time_slot):
     # Waits until the next time slot
-    
-    time_slot_seconds = int(time_slot.split(":")[1])
+
+    time_slot_splitted = time_slot.split(":")
+    time_slot_minutes = int(time_slot_splitted[0])
+    time_slot_seconds = int(time_slot_splitted[1])
     current_date = datetime.datetime.now()
 
-    if current_date.time().second >= time_slot_seconds:
-        target_date = current_date.replace(minute=current_date.time().minute + 1,second=time_slot_seconds, microsecond=0)
-    else:
-        target_date = current_date.replace(second=time_slot_seconds, microsecond=0)
+    current_minute = current_date.time().minute
+    current_hour = current_date.time().hour
+    adjusted_minute = (current_date.time().minute - current_date.time().minute % 10) + time_slot_minutes + 10
+    if adjusted_minute > 60:
+        adjusted_minute = adjusted_minute - 60
+        current_hour = current_hour + 1
+        
+    print("## current_minute: " + str(current_minute) + ", adjusted_minute: " + str(adjusted_minute))
+    target_date = current_date.replace(hour=current_hour, minute=adjusted_minute,second=time_slot_seconds, microsecond=0)
 
     current_date = datetime.datetime.now()
 
     time_diff = target_date - current_date
-    print("[INFO] Delaying for " + str(time_diff.seconds) + "." + str(time_diff.microseconds))
+    print("[INFO] Delaying for " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins")
 
     time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))
 
