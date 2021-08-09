@@ -1,4 +1,6 @@
 import subprocess
+import datetime
+import time
 
 def submit_comment(comment_str):
     curl_command = """
@@ -22,3 +24,21 @@ def submit_comment(comment_str):
     curl_command += comment_str + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
     curl_output = subprocess.check_output(curl_command, shell=True)
     return curl_output.decode()
+
+def delay_to_timeslot(time_slot):
+    # Waits until the next time slot
+    
+    time_slot_seconds = int(time_slot.split(":")[1])
+    current_date = datetime.datetime.now()
+
+    if current_date.time().second >= time_slot_seconds:
+        target_date = current_date.replace(minute=current_date.time().minute + 1,second=time_slot_seconds, microsecond=0)
+    else:
+        target_date = current_date.replace(second=time_slot_seconds, microsecond=0)
+
+    current_date = datetime.datetime.now()
+
+    time_diff = target_date - current_date
+    print("[INFO] Delaying for " + str(time_diff.seconds) + "." + str(time_diff.microseconds))
+
+    time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))
