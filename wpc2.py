@@ -3,6 +3,7 @@ import datetime
 import time
 import random
 import string
+import hmac
 
 def submit_comment(comment_str):
     curl_command = """
@@ -54,3 +55,71 @@ def delay_to_timeslot(time_slot):
 
 def generate_random_string(length):
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+import datetime
+
+# current_datetime = datetime.datetime.utcnow()
+
+def get_next_timeslot_date(current_datetime, target_timeslot):
+    print(str(current_datetime))
+
+    target_timeslot_splitted = target_timeslot.split(":")
+    target_timeslot_minutes = int(target_timeslot_splitted[0])
+    target_timeslot_seconds = int(target_timeslot_splitted[1])
+
+    current_minute = current_datetime.time().minute
+
+    minute_offset = target_timeslot_minutes
+    current_minute_end = current_minute % 10
+    print(current_minute_end)
+
+    if current_minute_end >  target_timeslot_minutes:
+            minute_offset += 10
+
+    print(str(minute_offset))
+    current_minute_base = current_minute - (current_minute % 10)
+    print(str(current_minute_base))
+
+    next_datetime = current_datetime.replace(minute=current_minute_base, second=target_timeslot_seconds)
+    print(str(next_datetime))
+
+    next_datetime += datetime.timedelta(minutes=minute_offset)
+    print(str(next_datetime))
+
+    return next_datetime
+
+def get_previous_valid_timeslot_date(current_datetime, time_slot):
+    # Searches for the valid timeslot location within the previous 10 minutes
+    ## For example with a time_slot of 1:11, 12:57:25 becomes 12:51:11, 12:50:00 becomes 12:41:11
+
+    time_slot_splitted = time_slot.split(":")
+    time_slot_minutes = int(time_slot_splitted[0])
+    time_slot_seconds = int(time_slot_splitted[1])
+    
+    target_date = current_datetime
+    
+    target_hour = target_date.time().hour
+    target_minute = target_date.time().minute
+    target_minute -= 10;
+
+    if target_minute < 0:
+        target_minute = 60 + target_minute
+        target_hour -= 1
+
+    if (target_minute % 10) > time_slot_minutes:
+        target_minute += 10
+        if target_minute > 60:
+            target_minute = target_minute - 60
+            target_hour += 1
+
+    target_minute = target_minute - (target_minute % 10) + time_slot_minutes
+    target_date = target_date.replace(hour=target_hour, minute=target_minute, second=time_slot_seconds)
+
+    return target_date
+
+def compute_moderation_hash(date_str, auth_key, auth_salt):
+    salt = auth_key + auth_salt
+    
+    assert(salt == "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1ea30c9849bfd208c9890cbf7bb56f59a20b52c4f")
+    computed_hash = hmac.new(salt.encode(), date_str.encode(), 'md5').hexdigest()
+    return computed_hash

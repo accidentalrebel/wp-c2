@@ -3,7 +3,6 @@
 from wpc2 import *
 from bs4 import BeautifulSoup
 import urllib.parse
-import hmac
 import sys
 import datetime
 
@@ -23,14 +22,8 @@ prev_unapproved_index = 0
 class Client:
     time_slot = ""
 
-def compute_moderation_hash(date_str):
-    salt = AUTH_KEY + AUTH_SALT
-    
-    assert(salt == "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1ea30c9849bfd208c9890cbf7bb56f59a20b52c4f")
-    computed_hash = hmac.new(salt.encode(), date_str.encode(), 'md5').hexdigest()
-    return computed_hash
 
-def fetch_comments_page(comments_url):
+    def fetch_comments_page(comments_url):
     fetch_comments_command = """
     curl '""" \
     + comments_url + \
@@ -76,34 +69,8 @@ def get_current_unapproved_index():
     url = response_splitted[1]
     return get_unapproved_index_from_url(url)
 
-def get_previous_valid_timeslot_date(current_datetime, time_slot):
-    # Searches for the valid timeslot location within the previous 10 minutes
-    ## For example with a time_slot of 1:11, 12:57:25 becomes 12:51:11, 12:50:00 becomes 12:41:11
-
-    time_slot_splitted = time_slot.split(":")
-    time_slot_minutes = int(time_slot_splitted[0])
-    time_slot_seconds = int(time_slot_splitted[1])
-    
-    target_date = current_datetime
-    
-    target_hour = target_date.time().hour
-    target_minute = target_date.time().minute
-    target_minute -= 10;
-
-    if target_minute < 0:
-        target_minute = 60 + target_minute
-        target_hour -= 1
-
-    if (target_minute % 10) > time_slot_minutes:
-        target_minute += 10
-        if target_minute > 60:
-            target_minute = target_minute - 60
-            target_hour += 1
-
-    target_minute = target_minute - (target_minute % 10) + time_slot_minutes
-    target_date = target_date.replace(hour=target_hour, minute=target_minute, second=time_slot_seconds)
-
-    return target_date
+def get_next_timeslot_date(current_datetime, time_slot):
+    return time_slot
 
 def get_moderation_hash_from_url(url):
     url_parsed = urllib.parse.urlparse(url)
