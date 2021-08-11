@@ -20,6 +20,7 @@ comment_index = 0
 prev_unapproved_index = 0
 
 class Client:
+    id = ""
     time_slot = ""
 
 def fetch_comments_page(comments_url):
@@ -86,13 +87,14 @@ def get_moderation_hash_at_current_time():
 
     response_splitted = response_details.split(",")
     url = response_splitted[1]
-    return get_moderation_hash_from_url(url)
+    return get_moderation_hash_from_url(url), get_unapproved_index_from_url(url)
 
 clients = []
 for i in range(1, 4):
     client = Client()
-    i_string = str(i)
+    client.id = str(i)
     clients.append(client)
+    print("## Created client with id: " + str(client.id))
 
 if prev_unapproved_index == 0:
     prev_unapproved_index = get_current_unapproved_index()
@@ -101,7 +103,7 @@ loop_counter = 99
 while(loop_counter > 0):
     print("[INFO] Delaying to client timeslot. " + client_time_slot);
     delay_to_timeslot(client_time_slot)
-    current_hash = get_moderation_hash_at_current_time()
+    current_hash, server_index = get_moderation_hash_at_current_time()
 
     print("[INFO] Current hash is: " + current_hash)
     print("[INFO] Delaying to server timeslot. " + server_time_slot);
@@ -109,8 +111,13 @@ while(loop_counter > 0):
     delay_to_timeslot(server_time_slot)
 
     for client in clients:
+        print("## checking client id: " + str(client.id))
+        
         for index_offset in range(1, len(clients) + 1 + 1):
             current_unapproved_index = prev_unapproved_index + index_offset
+            if current_unapproved_index == server_index:
+                continue
+            
             url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
             print("[INFO] Checking URL: " + url);
 
