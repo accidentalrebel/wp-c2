@@ -31,22 +31,8 @@ def submit_comment(comment_str):
 def delay_to_timeslot(time_slot):
     # Waits until the next time slot
 
-    time_slot_splitted = time_slot.split(":")
-    time_slot_minutes = int(time_slot_splitted[0])
-    time_slot_seconds = int(time_slot_splitted[1])
     current_date = datetime.datetime.utcnow()
-
-    current_minute = current_date.time().minute
-    current_hour = current_date.time().hour
-    adjusted_minute = (current_date.time().minute - current_date.time().minute % 10) + time_slot_minutes + 10
-    if adjusted_minute > 60:
-        adjusted_minute = adjusted_minute - 60
-        current_hour = current_hour + 1
-        
-    print("## current_minute: " + str(current_minute) + ", adjusted_minute: " + str(adjusted_minute))
-    target_date = current_date.replace(hour=current_hour, minute=adjusted_minute,second=time_slot_seconds, microsecond=0)
-
-    current_date = datetime.datetime.utcnow()
+    target_date = get_next_timeslot_date(current_date, time_slot)
 
     time_diff = target_date - current_date
     print("[INFO] Delaying for " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins")
@@ -61,8 +47,6 @@ import datetime
 # current_datetime = datetime.datetime.utcnow()
 
 def get_next_timeslot_date(current_datetime, target_timeslot):
-    print(str(current_datetime))
-
     target_timeslot_splitted = target_timeslot.split(":")
     target_timeslot_minutes = int(target_timeslot_splitted[0])
     target_timeslot_seconds = int(target_timeslot_splitted[1])
@@ -76,15 +60,9 @@ def get_next_timeslot_date(current_datetime, target_timeslot):
     if current_minute_end >  target_timeslot_minutes:
             minute_offset += 10
 
-    print(str(minute_offset))
     current_minute_base = current_minute - (current_minute % 10)
-    print(str(current_minute_base))
-
     next_datetime = current_datetime.replace(minute=current_minute_base, second=target_timeslot_seconds)
-    print(str(next_datetime))
-
     next_datetime += datetime.timedelta(minutes=minute_offset)
-    print(str(next_datetime))
 
     return next_datetime
 

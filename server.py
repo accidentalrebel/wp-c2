@@ -22,8 +22,7 @@ prev_unapproved_index = 0
 class Client:
     time_slot = ""
 
-
-    def fetch_comments_page(comments_url):
+def fetch_comments_page(comments_url):
     fetch_comments_command = """
     curl '""" \
     + comments_url + \
@@ -69,9 +68,6 @@ def get_current_unapproved_index():
     url = response_splitted[1]
     return get_unapproved_index_from_url(url)
 
-def get_next_timeslot_date(current_datetime, time_slot):
-    return time_slot
-
 def get_moderation_hash_from_url(url):
     url_parsed = urllib.parse.urlparse(url)
     queries = urllib.parse.parse_qs(url_parsed.query)
@@ -111,7 +107,6 @@ while(loop_counter > 0):
     print("[INFO] Delaying to server timeslot. " + server_time_slot);
 
     delay_to_timeslot(server_time_slot)
-    unapproved_index = get_current_unapproved_index()
 
     for client in clients:
         for index_offset in range(1, len(clients) + 1 + 1):
@@ -136,5 +131,5 @@ while(loop_counter > 0):
             else:
                 print("[INFO] No comment for moderation for " + client_time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
 
-    prev_unapproved_index = unapproved_index
+    prev_unapproved_index = get_current_unapproved_index()
     loop_counter += 1
