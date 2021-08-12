@@ -46,7 +46,9 @@ def test_timeslot():
     next_date = get_next_timeslot_date(current_date, "4:44")
     assert(next_date.minute == 24)
     assert(next_date.second == 44)
+    assert(next_date.microsecond == 0)
 
     next_date = get_next_timeslot_date(current_date, "1:11")
     assert(next_date.minute == 31)
     assert(next_date.second == 11)
+    assert(next_date.microsecond == 0)

