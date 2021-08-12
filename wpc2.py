@@ -61,7 +61,7 @@ def get_next_timeslot_date(current_datetime, target_timeslot):
             minute_offset += 10
 
     current_minute_base = current_minute - (current_minute % 10)
-    next_datetime = current_datetime.replace(minute=current_minute_base, second=target_timeslot_seconds)
+    next_datetime = current_datetime.replace(minute=current_minute_base, second=target_timeslot_seconds, microsecond=0)
     next_datetime += datetime.timedelta(minutes=minute_offset)
 
     return next_datetime
