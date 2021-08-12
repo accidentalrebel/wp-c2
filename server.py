@@ -121,8 +121,10 @@ while(loop_counter > 0):
             print("## prev_unapproved_index: " + str(prev_unapproved_index) + ", index_offset: " + str(index_offset))
             current_unapproved_index = prev_unapproved_index + index_offset
             print("## " + str(current_unapproved_index) + " in? " + str(processed_unapproved_indexes))
-            if current_unapproved_index == server_index or current_unapproved_index in processed_unapproved_indexes:
+            if current_unapproved_index == server_index:
                 index_client += 1
+                continue
+            if current_unapproved_index in processed_unapproved_indexes:
                 continue
             
             url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
