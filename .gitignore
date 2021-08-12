@@ -1,2 +1,4 @@
 /__pycache__/
 /exfiltrated.txt
+/test/wordpress/html/
+/test/wordpress/database/
