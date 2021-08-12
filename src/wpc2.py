@@ -5,10 +5,9 @@ import random
 import string
 import hmac
 
-def submit_comment(comment_str):
-    curl_command = """
-    curl 'http://127.0.0.3/wp-comments-post.php' \
-      -H 'Connection: keep-alive' \
+def submit_comment(url, comment_str):
+    curl_command = "curl '" + url + "' ";
+    curl_command += """-H 'Connection: keep-alive' \
       -H 'Cache-Control: max-age=0' \
       -H 'sec-ch-ua: "Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"' \
       -H 'sec-ch-ua-mobile: ?1' \
@@ -47,22 +46,27 @@ import datetime
 # current_datetime = datetime.datetime.utcnow()
 
 def get_next_timeslot_date(current_datetime, target_timeslot):
+    print("## current_datetime: " + str(current_datetime))
     target_timeslot_splitted = target_timeslot.split(":")
     target_timeslot_minutes = int(target_timeslot_splitted[0])
     target_timeslot_seconds = int(target_timeslot_splitted[1])
 
     current_minute = current_datetime.time().minute
+    print("## current_minute: " + str(current_minute))
 
     minute_offset = target_timeslot_minutes
     current_minute_end = current_minute % 10
-    print(current_minute_end)
+    print("## current_minute_end:" + str(current_minute_end))
 
     if current_minute_end >  target_timeslot_minutes:
             minute_offset += 10
 
+    print("## minute_offset: " + str(minute_offset))
     current_minute_base = current_minute - (current_minute % 10)
+    print("## current_minute_base: " + str(current_minute_base))
     next_datetime = current_datetime.replace(minute=current_minute_base, second=target_timeslot_seconds, microsecond=0)
     next_datetime += datetime.timedelta(minutes=minute_offset)
+    print("## next_datetime: " + str(next_datetime))
 
     return next_datetime
 

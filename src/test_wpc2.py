@@ -1,3 +1,5 @@
+import sys
+sys.path.append("../src")
 import datetime
 from wpc2 import *
 
@@ -52,3 +54,10 @@ def test_timeslot():
     assert(next_date.minute == 31)
     assert(next_date.second == 11)
     assert(next_date.microsecond == 0)
+
+    current_date = datetime.datetime(2021, 8, 11, minute=18, second=22) 
+    next_date = get_next_timeslot_date(current_date, "1:11")
+    assert(next_date.minute == 21)
+    assert(next_date.second == 11)
+    assert(next_date.microsecond == 0)
+        
