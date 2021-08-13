@@ -1,9 +1,0 @@
-2021-08-12 07:22:22.135075: Extracted data with timeslot of 1:11: RROJGVR4CX: Exfiltrated Data Test
-2021-08-12 07:22:22.191742: Extracted data with timeslot of 1:11: WZX9RQF50A: Exfiltrated Data Test
-2021-08-12 07:42:22.130424: Extracted data with timeslot of 1:11: 1SHTM32I1X: Exfiltrated Data Test
-2021-08-12 07:42:22.197449: Extracted data with timeslot of 1:11: V3XTT10HS4: Exfiltrated Data Test
-2021-08-12 07:42:22.245688: Extracted data with timeslot of 1:11: NTKXZ8G6NO: Exfiltrated Data Test
-2021-08-12 08:42:22.151667: Extracted data with timeslot of 1:11: GNPT8VOGJH: Exfiltrated Data Test
-2021-08-12 08:42:22.205283: Extracted data with timeslot of 1:11: B4JIB4SQSU: Exfiltrated Data Test
-2021-08-12 08:52:22.119491: Extracted data with timeslot of 1:11: KSLPJTTWP3: Exfiltrated Data Test
-2021-08-12 09:12:22.136774: Extracted data with timeslot of 1:11: TIQ5DMCI0B: Exfiltrated Data Test
