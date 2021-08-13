@@ -11,11 +11,15 @@ class CommentResponse:
     url = ""
     unapproved_index = 0
     moderation_hash = ""
+    html_response_code = ""
+    html_response = ""
 
     def __init__(self, raw_response):
         response_splitted = raw_response.split("\n")
+        self.html_response = "\n".join(response_splitted[0:-1])
         response_details = response_splitted[-1]
         response_splitted = response_details.split(",")
+        self.html_response_code = response_splitted[0]
         self.url = response_splitted[1]
         self.unapproved_index = get_unapproved_index_from_url(self.url)
         self.moderation_hash = get_moderation_hash_from_url(self.url)
