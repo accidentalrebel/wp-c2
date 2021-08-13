@@ -4,6 +4,22 @@ import time
 import random
 import string
 import hmac
+import urllib.parse
+
+class CommentResponse:
+    is_success = False
+    url = ""
+    unapproved_index = 0
+    moderation_hash = ""
+
+    def __init__(self, raw_response):
+        response_splitted = raw_response.split("\n")
+        response_details = response_splitted[-1]
+        response_splitted = response_details.split(",")
+        self.url = response_splitted[1]
+        self.unapproved_index = get_unapproved_index_from_url(self.url)
+        self.moderation_hash = get_moderation_hash_from_url(self.url)
+        self.is_success = True
 
 def submit_comment(blog_url, post_id, comment_str):
     curl_command = "curl '" + blog_url
@@ -28,7 +44,7 @@ def submit_comment(blog_url, post_id, comment_str):
     curl_command += str(post_id) + "&comment_parent=0&comment="
     curl_command += comment_str + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
     curl_output = subprocess.check_output(curl_command, shell=True)
-    return curl_output.decode()
+    return CommentResponse(curl_output.decode())
 
 def delay_to_timeslot(time_slot):
     # Waits until the next time slot
@@ -108,3 +124,21 @@ def compute_moderation_hash(date_str, auth_key, auth_salt):
     assert(salt == "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1ea30c9849bfd208c9890cbf7bb56f59a20b52c4f")
     computed_hash = hmac.new(salt.encode(), date_str.encode(), 'md5').hexdigest()
     return computed_hash
+
+def get_unapproved_index_from_url(url):
+    url_parsed = urllib.parse.urlparse(url)
+    queries = urllib.parse.parse_qs(url_parsed.query)
+
+    if 'unapproved' in queries:
+        return int(queries['unapproved'][0])
+    else:
+        return -1
+
+def get_moderation_hash_from_url(url):
+    url_parsed = urllib.parse.urlparse(url)
+    queries = urllib.parse.parse_qs(url_parsed.query)
+
+    if 'moderation-hash' in queries:
+        return queries['moderation-hash'][0]
+    else:
+        return None

