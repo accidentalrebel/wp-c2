@@ -58,7 +58,7 @@ def get_next_timeslot_date(current_datetime, target_timeslot):
     current_minute_end = current_minute % 10
     print("## current_minute_end:" + str(current_minute_end))
 
-    if current_minute_end >  target_timeslot_minutes:
+    if current_minute_end >=  target_timeslot_minutes:
             minute_offset += 10
 
     print("## minute_offset: " + str(minute_offset))
