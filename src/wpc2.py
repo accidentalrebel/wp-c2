@@ -5,9 +5,9 @@ import random
 import string
 import hmac
 
-def submit_comment(url, comment_str):
-    curl_command = "curl '" + url + "' ";
-    curl_command += """-H 'Connection: keep-alive' \
+def submit_comment(blog_url, post_id, comment_str):
+    curl_command = "curl '" + blog_url
+    curl_command += """wp-comments-post.php' -H 'Connection: keep-alive' \
       -H 'Cache-Control: max-age=0' \
       -H 'sec-ch-ua: "Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"' \
       -H 'sec-ch-ua-mobile: ?1' \
@@ -20,9 +20,12 @@ def submit_comment(url, comment_str):
       -H 'Sec-Fetch-Mode: navigate' \
       -H 'Sec-Fetch-User: ?1' \
       -H 'Sec-Fetch-Dest: document' \
-      -H 'Referer: http://127.0.0.3/2021/08/06/hello-world/' \
+      -H 'Referer: """
+    curl_command += blog_url
+    curl_command += """' \
       -H 'Accept-Language: en-US,en;q=0.9' \
-      --data-raw 'author=TestName&email=test%40email.com&url=&submit=Post+Comment&comment_post_ID=1&comment_parent=0&comment="""
+      --data-raw 'author=TestName&email=test%40email.com&url=&submit=Post+Comment&comment_post_ID="""
+    curl_command += str(post_id) + "&comment_parent=0&comment="
     curl_command += comment_str + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
     curl_output = subprocess.check_output(curl_command, shell=True)
     return curl_output.decode()

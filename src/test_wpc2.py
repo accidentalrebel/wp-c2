@@ -55,9 +55,9 @@ def test_timeslot():
     assert(next_date.second == 11)
     assert(next_date.microsecond == 0)
 
-    current_date = datetime.datetime(2021, 8, 11, minute=18, second=22) 
+    current_date = datetime.datetime(2021, 8, 13, hour=1, minute=41, second=38) 
     next_date = get_next_timeslot_date(current_date, "1:11")
-    assert(next_date.minute == 21)
+    assert(next_date.minute == 51)
     assert(next_date.second == 11)
     assert(next_date.microsecond == 0)
         
