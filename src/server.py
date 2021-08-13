@@ -11,6 +11,8 @@ random.seed(int(datetime.datetime.now().timestamp()) + int(sys.argv[1]))
 target_blog = "http://127.0.0.3/"
 exfil_channel_id = 5
 ack_channel_id = 7
+exfil_channel = "2021/08/13/exfil-channel/"
+ack_channel = "2021/08/13/ack-channel/"
 
 server_time_slot = "2:22"
 client_time_slot = "1:11"
