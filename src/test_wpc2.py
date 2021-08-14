@@ -3,15 +3,6 @@ sys.path.append("../src")
 import datetime
 from wpc2 import *
 
-def test_get_next_timeslot_date():
-    time_slot = "1:11"
-
-    current_date = datetime.datetime(2021, 1, 2, hour=13, minute=26, second=26)
-    timeslot_date = get_next_timeslot_date(current_date, time_slot)
-    assert(timeslot_date.minute == 31)
-    assert(timeslot_date.second == 11)
-    
-
 def test_get_previous_valid_timeslot_date():
     time_slot = "1:11"
 
@@ -44,20 +35,20 @@ def test_compute_moderation_hash():
     assert("0d36c71955cc6fc19fb31501132cfdb1" == computed_hash)
 
 def test_timeslot():
-    current_date = datetime.datetime(2021, 8, 11, minute=23) 
-    next_date = get_next_timeslot_date(current_date, "4:44")
-    assert(next_date.minute == 24)
+    current_date = datetime.datetime(2021, 8, 11, minute=23, second=0) 
+    next_date = get_next_timeslot_date(current_date, 44)
+    assert(next_date.minute == 23)
     assert(next_date.second == 44)
     assert(next_date.microsecond == 0)
 
-    next_date = get_next_timeslot_date(current_date, "1:11")
-    assert(next_date.minute == 31)
+    next_date = get_next_timeslot_date(current_date, 11)
+    assert(next_date.minute == 23)
     assert(next_date.second == 11)
     assert(next_date.microsecond == 0)
 
     current_date = datetime.datetime(2021, 8, 13, hour=1, minute=41, second=38) 
-    next_date = get_next_timeslot_date(current_date, "1:11")
-    assert(next_date.minute == 51)
+    next_date = get_next_timeslot_date(current_date, 11)
+    assert(next_date.minute == 42)
     assert(next_date.second == 11)
     assert(next_date.microsecond == 0)
         

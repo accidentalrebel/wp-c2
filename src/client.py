@@ -13,8 +13,8 @@ target_blog = "http://127.0.0.3/"
 exfil_channel_id = 5
 ack_channel_id = 7
 
-send_time_slot = "1:11"
-confirm_time_slot = "3:33"
+send_time_slot = 11
+confirm_time_slot = 33
 
 while True:
     delay_to_timeslot(send_time_slot)

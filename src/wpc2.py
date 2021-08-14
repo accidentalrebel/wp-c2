@@ -69,25 +69,16 @@ import datetime
 # current_datetime = datetime.datetime.utcnow()
 
 def get_next_timeslot_date(current_datetime, target_timeslot):
-    print("## current_datetime: " + str(current_datetime))
-    target_timeslot_splitted = target_timeslot.split(":")
-    target_timeslot_minutes = int(target_timeslot_splitted[0])
-    target_timeslot_seconds = int(target_timeslot_splitted[1])
-
     current_minute = current_datetime.time().minute
-    print("## current_minute: " + str(current_minute))
+    current_seconds = current_datetime.time().second
 
-    minute_offset = target_timeslot_minutes
-    current_minute_end = current_minute % 10
-    print("## current_minute_end:" + str(current_minute_end))
-
-    if current_minute_end >=  target_timeslot_minutes:
-            minute_offset += 10
+    minute_offset = 0
+    if current_seconds >= target_timeslot:
+        minute_offset += 1
 
     print("## minute_offset: " + str(minute_offset))
-    current_minute_base = current_minute - (current_minute % 10)
-    print("## current_minute_base: " + str(current_minute_base))
-    next_datetime = current_datetime.replace(minute=current_minute_base, second=target_timeslot_seconds, microsecond=0)
+    next_datetime = current_datetime.replace(minute=current_minute, second=target_timeslot, microsecond=0)
+    print("## next_datetime: " + str(next_datetime))
     next_datetime += datetime.timedelta(minutes=minute_offset)
     print("## next_datetime: " + str(next_datetime))
 
