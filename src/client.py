@@ -16,10 +16,11 @@ channel.exfil_channel_id = 5
 channel.ack_channel = "2021/08/13/ack-channel/"
 channel.ack_channel_id = 7
 
-btm_send_time_slot = 10
-btm_confirm_time_slot = 30
+btm_send_config= SendConfig()
+btm_send_config.send_time_slot = 10
+btm_send_config.confirm_time_slot = 30
 
 message = Message()
 message.message_id = generate_random_string(10)
 message.message = message.message_id + ": Exfiltrated Data Test"
-send_data(channel, message, btm_send_time_slot, btm_confirm_time_slot)
+send_data(channel, message, btm_send_config)
