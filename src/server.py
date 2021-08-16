@@ -13,9 +13,13 @@ channel.ack_channel = "2021/08/13/ack-channel/"
 channel.ack_channel_id = 7
 
 recv_config = ReceiveConfig()
-recv_config.recv_time_slot = 10
-recv_config.process_time_slot = 20
+recv_config.recv_time_slot = 30
+recv_config.process_time_slot = 50
 recv_config.prev_unapproved_index = 0
+
+mtb_send_config= SendConfig()
+mtb_send_config.send_time_slot = 10
+# mtb_send_config.confirm_time_slot = 30
 
 class Client:
     id = ""
@@ -27,6 +31,13 @@ for i in range(1, 4):
     client.id = str(i)
     clients.append(client)
     print("## Created client with id: " + str(client.id))
+
+message = Message()
+message.message_id = generate_random_string(10)
+message.message = message.message_id + ": Info"
+send_data(channel, message, mtb_send_config)
+
+sys.exit()
 
 if recv_config.prev_unapproved_index == 0:
     recv_config.prev_unapproved_index = get_current_unapproved_index(channel)

