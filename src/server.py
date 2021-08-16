@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from wpc2 import *
+import cmd
 import sys
 import datetime
 
@@ -32,10 +33,18 @@ for i in range(1, 4):
     clients.append(client)
     print("## Created client with id: " + str(client.id))
 
-message = Message()
-message.message_id = generate_random_string(10)
-message.message = message.message_id + ": Info"
-send_data(channel, message, mtb_send_config)
+class ServerShell(cmd.Cmd):
+    intro = "Intro"
+    prompt = ">> "
+
+    def do_info(self, args):
+        print("Info called.")
+        message = Message()
+        message.message_id = generate_random_string(10)
+        message.message = message.message_id + ": Info"
+        send_data(channel, message, mtb_send_config)
+
+ServerShell().cmdloop()
 
 sys.exit()
 
@@ -60,3 +69,4 @@ while(loop_counter > 0):
         submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
 
     loop_counter -= 1
+
