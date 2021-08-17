@@ -169,13 +169,14 @@ def send_data(channel, data, send_config):
 
         if send_config.confirm_time_slot:
             delay_to_timeslot(send_config.confirm_time_slot)
+            
             response = response = submit_comment(channel.target_blog, channel.ack_channel_id, data.message_id)
             if "Duplicate" in response.html_response:
                 # If it's duplicated, that means that the server successfully got the message.
                 print("[INFO] send_data: Message submitted and confirmed.")
                 break
             else:
-                print("[INFO] send_data: Message was not received by server. Resending...")
+                print("[INFO + " + str(datetime.datetime.utcnow()) + " ] send_data: Message was not received by server. Resending...")
         else:
             break
 

