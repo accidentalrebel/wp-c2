@@ -45,5 +45,7 @@ while(loop_counter > 0):
         message.message_id = generate_random_string(10)
         message.message = message.message_id + ": Exfiltrated Data Test"
         send_data(channel, message, btm_send_config)
+    else:
+        print("[INFO] Client: No command to execute.")
 
     loop_counter -= 1
