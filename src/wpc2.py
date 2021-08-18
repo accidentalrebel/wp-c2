@@ -48,6 +48,29 @@ class CommentResponse:
         self.moderation_hash = get_moderation_hash_from_url(self.url)
         self.is_success = True
 
+def get_post_id(blog_url, channel_url):
+    curl_command = "curl '" + blog_url + channel_url + "' "
+    curl_command += """-H 'Connection: keep-alive' \
+  -H 'Cache-Control: max-age=0' \
+  -H 'sec-ch-ua: "Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"' \
+  -H 'sec-ch-ua-mobile: ?1' \
+  -H 'Upgrade-Insecure-Requests: 1' \
+  -H 'User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36' \
+  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'Sec-Fetch-Site: none' \
+  -H 'Sec-Fetch-Mode: navigate' \
+  -H 'Sec-Fetch-User: ?1' \
+  -H 'Sec-Fetch-Dest: document' \
+  -H 'Accept-Language: en-US,en;q=0.9' \
+  -H 'Cookie: wp-settings-1=unfold%3D1%26amp%3Bmfold%3Do; wp-settings-time-1=1628478192' \
+  --compressed -s"""
+    curl_output = subprocess.check_output(curl_command, shell=True)
+    soup = BeautifulSoup(curl_output, "html.parser")
+    for s in soup.find_all("link", { "rel": "shortlink" }):
+        return int(s["href"].split("=")[1])
+    
+    return -1
+
 def submit_comment(blog_url, post_id, comment_str):
     curl_command = "curl '" + blog_url
     curl_command += """wp-comments-post.php' -H 'Connection: keep-alive' \

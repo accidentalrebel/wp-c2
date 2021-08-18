@@ -12,9 +12,10 @@ random.seed(int(datetime.datetime.now().timestamp()) + int(server_id))
 channel = Channel()
 channel.target_blog = "http://127.0.0.3/"
 channel.exfil_channel = "2021/08/13/exfil-channel/"
-channel.exfil_channel_id = 5
+channel.exfil_channel_id = get_post_id(channel.target_blog, channel.exfil_channel)
 channel.ack_channel = "2021/08/13/ack-channel/"
 channel.ack_channel_id = 7
+channel.ack_channel_id = get_post_id(channel.target_blog, channel.ack_channel)
 
 # Timings
 ## For server:
