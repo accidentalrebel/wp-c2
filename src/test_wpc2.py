@@ -52,3 +52,10 @@ def test_timeslot():
     assert(next_date.second == 11)
     assert(next_date.microsecond == 0)
         
+def test_get_post_id():
+    target_blog = "http://127.0.0.3/"
+    exfil_channel = "2021/08/13/exfil-channel/"
+    ack_channel = "2021/08/13/ack-channel/"
+
+    assert(get_post_id(target_blog, exfil_channel) == 5)
+    assert(get_post_id(target_blog, ack_channel) == 7)
