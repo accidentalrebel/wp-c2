@@ -260,7 +260,8 @@ def receive_data(channel, num_of_receivers, recv_config):
                     exfil_content = str(elem.string).strip()
                     received_data.append(exfil_content)
 
-                    log_print("[INFO] receive_data: Received content " + str(exfil_content) + " using index " + str(current_unapproved_index), 1)
+                    if exfil_content != "Getting_moderation_hash":
+                        log_print("[INFO] receive_data: Received content " + str(exfil_content) + " using index " + str(current_unapproved_index), 1)
 
                     processed_unapproved_indexes.append(current_unapproved_index)
                     break

