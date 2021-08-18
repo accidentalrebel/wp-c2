@@ -26,7 +26,6 @@ class ReceiveConfig:
 class Sender:
     name = None
     email = None
-    website = None
 
 class Comment:
     sender = None
@@ -99,9 +98,8 @@ def submit_comment(blog_url, post_id, comment):
       -H 'Sec-Fetch-Dest: document' \
       -H 'Referer: """
     curl_command += blog_url
-    curl_command += """' \
-      -H 'Accept-Language: en-US,en;q=0.9' \
-      --data-raw 'author=TestName&email=test%40email.com&url=&submit=Post+Comment&comment_post_ID="""
+    curl_command += "' -H 'Accept-Language: en-US,en;q=0.9' --data-raw 'author="
+    curl_command += comment.sender.name + "&email=" + comment.sender.email + "&url=&submit=Post+Comment&comment_post_ID="
     curl_command += str(post_id) + "&comment_parent=0&comment="
     curl_command += comment.comment + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
     curl_output = subprocess.check_output(curl_command, shell=True)
@@ -205,6 +203,8 @@ def send_data(channel, comment, send_config):
             delay_to_timeslot(send_config.confirm_time_slot)
 
             ack_comment = comment
+            ack_comment.sender.name = comment.comment_id
+            ack_comment.sender.email = comment.comment_id.lower() + "@gmail.com"
             ack_comment.comment = comment.comment_id
             response = response = submit_comment(channel.target_blog, channel.ack_channel_id, ack_comment)
             if "Duplicate" in response.html_response:

