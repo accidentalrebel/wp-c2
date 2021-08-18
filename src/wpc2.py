@@ -23,16 +23,15 @@ class ReceiveConfig:
     process_time_slot = None
     prev_unapproved_index = None
 
-class Comment:
-    comment = None
-    comment_id = None
+class Sender:
+    name = None
+    email = None
+    website = None
 
-class Channel:
-    target_blog = None
-    exfil_channel_id = None
-    ack_channel_id = None
-    exfil_channel = None
-    ack_channel = None
+class Comment:
+    sender = None
+    comment_id = None
+    comment = None
 
 class CommentResponse:
     is_success = False
@@ -52,6 +51,13 @@ class CommentResponse:
         self.unapproved_index = get_unapproved_index_from_url(self.url)
         self.moderation_hash = get_moderation_hash_from_url(self.url)
         self.is_success = True
+    
+class Channel:
+    target_blog = None
+    exfil_channel_id = None
+    ack_channel_id = None
+    exfil_channel = None
+    ack_channel = None
 
 def get_post_id(blog_url, channel_url):
     curl_command = "curl '" + blog_url + channel_url + "' "

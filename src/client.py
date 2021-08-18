@@ -8,6 +8,7 @@ import tools
 client_id = sys.argv[1]
 random.seed(int(datetime.datetime.now().timestamp()) + int(client_id))
 
+sender = generate_random_sender()
 commands = [ "info", "exfil", "delete" ]
 
 channel = Channel()
