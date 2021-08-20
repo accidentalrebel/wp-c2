@@ -4,6 +4,8 @@ import wpc2
 
 is_debug = False
 
+CRYPT_KEY = 3
+
 def log_print(msg, level):
     global is_debug
     if not is_debug and level > 1:
@@ -66,5 +68,29 @@ def generate_random_sender():
     sender.email += "@" + email_list[random.randint(0, len(email_list) - 1)]
 
     return sender
-        
-                              
+
+def encrypt_decript_string(s):
+    new_s = ""
+    for c in s:
+        ord_c = ord(c)
+
+        if ord_c != 0:
+            res = ord_c ^ CRYPT_KEY
+        else:
+            res = 0
+
+        new_s += chr(res)
+
+    return new_s;
+
+
+def generate_random_spam_comment(index_to_use = None):
+    comments = [ "Mannabase is a new Cryptocurrency is actually giving away FREE coins every week to new users. The best part is they are a Humanitaraian organization set to be bigger than Bitcoin. This could be the Biggest investment you ever make. If you have 5 Minutes to spare read the Whitepaper these Guys are something else. https://www.mannabase.co/join/",
+                 "Have you aever wanted to work from home or just top up your earnings? This tried and tested system teaches you how you can make a small fortune from the comfort of your own home. https://www.workfromhome.guide/",
+                 "Do you mind if I quote a few of your posts as long as I provide credit and sources back to your webpage? My blog is in the exct same niche as yours and my users would genuinely benefit from some of the information you present here. Please let me know if this is alright with you. https://evilcorp.com/sellsoul/"]
+    if index_to_use != None:
+        print("HERE" + str(index_to_use))
+        return comments[index_to_use]
+    else:
+        print("THERE" + str(index_to_use))
+        return comments[random.randint(0, len(comments) - 1)]

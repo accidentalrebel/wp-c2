@@ -51,6 +51,12 @@ def test_timeslot():
     assert(next_date.minute == 42)
     assert(next_date.second == 11)
     assert(next_date.microsecond == 0)
+
+    current_date = datetime.datetime(2021, 8, 13, hour=6, minute=36, second=10) 
+    next_date = get_next_timeslot_date(current_date, 20)
+    assert(next_date.minute == 36)
+    assert(next_date.second == 20)
+    assert(next_date.microsecond == 0)
         
 def test_get_post_id():
     target_blog = "http://127.0.0.3/"
@@ -59,3 +65,9 @@ def test_get_post_id():
 
     assert(get_post_id(target_blog, exfil_channel) == 5)
     assert(get_post_id(target_blog, ack_channel) == 7)
+
+def test_generate_random_spam_comment():
+    comment = generate_random_spam_comment(0)
+    assert(comment == "Mannabase is a new Cryptocurrency is actually giving away FREE coins every week to new users. The best part is they are a Humanitaraian organization set to be bigger than Bitcoin. This could be the Biggest investment you ever make. If you have 5 Minutes to spare read the Whitepaper these Guys are something else. https://www.mannabase.co/join/")
+    
+    
