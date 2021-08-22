@@ -226,7 +226,7 @@ def get_current_unapproved_index(channel):
     comment = Comment()
     comment.sender = generate_random_sender()
     comment.comment_id = ""
-    comment.comment = generate_random_string(10) + ": get_current_unapproved_index"
+    comment.comment = generate_random_spam_comment()
     response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
     return response.unapproved_index
 
@@ -234,7 +234,7 @@ def get_moderation_hash_at_current_time(channel):
     comment = Comment()
     comment.sender = generate_random_sender()
     comment.comment_id = ""
-    comment.comment = generate_random_string(10) + ": Getting_moderation_hash"
+    comment.comment = generate_random_spam_comment()
     response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
     return response.moderation_hash, response.unapproved_index
 

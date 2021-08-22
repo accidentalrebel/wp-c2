@@ -89,8 +89,6 @@ def generate_random_spam_comment(index_to_use = None):
                  "Have you aever wanted to work from home or just top up your earnings? This tried and tested system teaches you how you can make a small fortune from the comfort of your own home. https://www.workfromhome.guide/",
                  "Do you mind if I quote a few of your posts as long as I provide credit and sources back to your webpage? My blog is in the exct same niche as yours and my users would genuinely benefit from some of the information you present here. Please let me know if this is alright with you. https://evilcorp.com/sellsoul/"]
     if index_to_use != None:
-        print("HERE" + str(index_to_use))
         return comments[index_to_use]
     else:
-        print("THERE" + str(index_to_use))
         return comments[random.randint(0, len(comments) - 1)]
