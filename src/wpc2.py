@@ -275,7 +275,9 @@ def receive_data(channel, num_of_receivers, recv_config):
                 elem = elems[-1]
                 if elem and elem.string:
 
-                    exfil_content = str(elem.string).strip()
+                    print("## elem.string: " + elem.string)
+                    
+                    exfil_content = str(elem.string.split("?d=")[1]).strip()
                     received_data.append(exfil_content)
 
                     if exfil_content != "Getting_moderation_hash":

