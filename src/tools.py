@@ -16,7 +16,7 @@ def log_print(msg, level):
 def generate_random_string(length, digits_only = False):
     choices = string.digits
     if not digits_only:
-        choices += string.ascii_uppercase
+        choices += string.ascii_lowercase
     return ''.join(random.choices(choices, k=length))
     
 def generate_random_sender():
@@ -75,7 +75,7 @@ def encrypt_decript_string(s):
         ord_c = ord(c)
 
         if ord_c != 0:
-            res = ord_c ^ CRYPT_KEY
+            res = ord_c + CRYPT_KEY
         else:
             res = 0
 
