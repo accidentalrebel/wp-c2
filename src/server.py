@@ -5,10 +5,18 @@ import sys
 import time
 import datetime
 import threading
+import argparse
 
-server_id = sys.argv[1]
+parser = argparse.ArgumentParser(description="Starts the server.")
+parser.add_argument("id_number", type=int,
+                    help="ID number of this server. Should be unique from clients.")
+parser.add_argument("-v", "--verbose", action="store_true",
+                    help="Verbose.")
+args = parser.parse_args()
+
+server_id = args.id_number
 random.seed(int(datetime.datetime.utcnow().timestamp()) + int(server_id))
-is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
+is_debug = args.verbose
 sender = generate_random_sender()
 
 channel = Channel()
@@ -61,7 +69,7 @@ def thread_start_listener():
             comment.comment = generate_random_spam_comment(0) + encrypt_decript_string(name_to_use)
             comment.sender.name = name_to_use
             comment.sender.email = name_to_use.lower() + "@gmail.com"
-            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received comment with ID " + comment.comment + ". Sending acknowledgement...", 1)
+            log_print("[INFO " + str(datetime.datetime.utcnow()) + "] thread_start_listener: Received comment from " + comment.sender.name + ". Sending acknowledgement...", 1)
             response = submit_comment(channel.target_blog, channel.ack_channel_id, comment)
             log_print("## " + str(response.html_response_code) + ", " + response.html_response, 2)
 

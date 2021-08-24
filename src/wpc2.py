@@ -274,9 +274,6 @@ def receive_data(channel, num_of_receivers, recv_config):
                 elems = soup.find_all("div", class_="comment-content")
                 elem = elems[-1]
                 if elem and elem.string:
-
-                    print("## elem.string: " + elem.string)
-                    
                     exfil_content = str(elem.string.split("?d=")[1]).strip()
                     received_data.append(exfil_content)
 

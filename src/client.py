@@ -4,10 +4,18 @@ import datetime
 import random
 import sys
 import tools
+import argparse
 
-client_id = sys.argv[1]
+parser = argparse.ArgumentParser(description="Starts the client.")
+parser.add_argument("id_number", type=int,
+                    help="ID number of this client. Should be unique from other clients.")
+parser.add_argument("-v", "--verbose", action="store_true",
+                    help="Verbose.")
+args = parser.parse_args()
+
+client_id = args.id_number
 random.seed(int(datetime.datetime.utcnow().timestamp()) + int(client_id))
-is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
+is_debug = args.verbose
 sender = generate_random_sender()
 
 channel = Channel()
