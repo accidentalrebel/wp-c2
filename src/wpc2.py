@@ -7,7 +7,6 @@ import hmac
 import urllib.parse
 import tools
 import sys
-tools.is_debug = True if len(sys.argv) > 2 and sys.argv[2] == "-v" else False
 from tools import *
 
 from bs4 import BeautifulSoup

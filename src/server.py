@@ -8,15 +8,18 @@ import threading
 import argparse
 
 parser = argparse.ArgumentParser(description="Starts the server.")
-parser.add_argument("id_number", type=int,
-                    help="ID number of this server. Should be unique from clients.")
-parser.add_argument("-v", "--verbose", action="store_true",
-                    help="Verbose.")
+parser.add_argument("id_number", type=int, help="ID number of this server. Should be unique from clients.")
+parser.add_argument("-t", "--target", help="URL of target blog.", required=True)
+parser.add_argument("-x", "--exfil_channel", help="Permalink of the exfil channel. Format: 2021/08/13/exfil-channel-post/.", required=True)
+parser.add_argument("-a", "--ack_channel", help="Permalink of the acknowledgement channel. Format: 2021/08/13/ack-channel-post/.", required=True)
+parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging.")
 args = parser.parse_args()
+
+tools.is_debug = args.verbose
 
 server_id = args.id_number
 random.seed(int(datetime.datetime.utcnow().timestamp()) + int(server_id))
-is_debug = args.verbose
+
 sender = generate_random_sender()
 
 channel = Channel()
