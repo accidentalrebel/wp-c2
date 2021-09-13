@@ -228,7 +228,12 @@ def receive_data(channel, num_of_receivers, recv_config):
                 elems = soup.find_all("div", class_="comment-content")
                 elem = elems[-1]
                 if elem and elem.string:
-                    exfil_content = str(elem.string.split("?d=")[1]).strip()
+                    exfil_splitted = elem.string.split("?d=")
+                    if len(exfil_splitted) > 1:
+                        exfil_content = str(exfil_splitted[1]).strip()
+                    else:
+                        exfil_content = elem.string[0]
+                        
                     received_data.append(exfil_content)
 
                     if exfil_content != "Getting_moderation_hash":
