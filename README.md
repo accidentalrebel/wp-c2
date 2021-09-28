@@ -11,3 +11,20 @@ When the botmaster wants to send a message, it posts a comment which autonatical
 In order for the bots to view the comment posted by the botmaster, they will generate the same preview link by exploting how the preview URL generation works. Using a number of steps explained in my talk, the bots will be able to generate the same exact link that the botmaster received, allowing them to view the submitted comment.
 
 Communications from bots to botmaster is done the same way.
+
+# How to test
+This repository automatically sets up a local Wordpress instance using Docker. With some configuration, both the botmaster and bots can be able tonuse this local wordpress instance to send messages to each other.
+
+First, download the repository and then run the script thst would the Docker container with the Wordpress instance.
+
+```console
+$ git clone git@github.com:accidentalrebel/wp-c2.git
+$ cd wp-c2/src
+$ ../tools/docker.sh
+```
+
+> Take note that the wordpress installation included in this repository has been modified to allow the commenting of multiple clients from the same machine. This is only needed when testing this PoC.
+
+Once the Wordpress is up, you can visit it using your web browser via the URL `127.0/0.3`
+
+Now we can run the server (botmaster/attacker) and the clients (bots/infected machines). 
