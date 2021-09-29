@@ -3,7 +3,7 @@ cd ../test/wordpress
 
 if [[ $1 = "up" ]]
 then
-    sudo docker-compose up -d
+    sudo docker compose up -d
 else
-    sudo docker-compose stop
+    sudo docker compose stop
 fi    

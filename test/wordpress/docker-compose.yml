@@ -1,4 +1,5 @@
-wordpress:
+services:
+  wordpress:
     image: wordpress
     links:
      - mariadb:mysql
@@ -9,7 +10,7 @@ wordpress:
      - "127.0.0.3:80:80"
     volumes:
      - ./html:/var/www/html
-mariadb:
+  mariadb:
     image: mariadb
     environment:
      - MYSQL_ROOT_PASSWORD=password
