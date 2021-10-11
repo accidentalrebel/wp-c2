@@ -14,10 +14,10 @@ In order for the bots to view the comment posted by the botmaster, they will gen
 
 Communications from bots to botmaster is done the same way.
 
-# Requirements
+# How to test
+*Requirements*
   * [docker-compose](https://docs.docker.com/compose/install/)
 
-# How to test
 This repository automatically sets up a local Wordpress instance using Docker. With some configuration, both the botmaster and bots can be able tonuse this local wordpress instance to send messages to each other.
 
 First, download the repository and then run the script thst would the Docker container with the Wordpress instance.
